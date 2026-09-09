@@ -1,51 +1,95 @@
 import { create } from "zustand";
 
-import { MOCK_ACCOUNT } from "@/lib/mock/mockData";
-import type { AuthMachineState } from "@/types/account";
+import {
+  beginSignIn,
+  listenToSignInProgress,
+  signOut as signOutCommand,
+  tryRestoreSession,
+} from "@/lib/api/accounts";
+import { isTauri } from "@/lib/tauri";
+import type { AuthMachineState, SignInEvent } from "@/types/account";
 
 interface AuthStore {
   state: AuthMachineState;
   /** Bound to the "Remember me" checkbox on the login screen. */
   rememberMePreference: boolean;
   setRememberMePreference: (value: boolean) => void;
+  /** The sign-in flow's current step, for a live status line - null when not signing in. */
+  signInStep: SignInEvent["type"] | null;
 
   /**
-   * Drives LoggedOut -> Authenticating -> Authenticated using
-   * `MOCK_ACCOUNT`. This is a stand-in for the real Microsoft sign-in flow
-   * (loopback authorization-code + PKCE -> Xbox Live -> XSTS -> Minecraft
-   * Services), which is Phase 4 and requires an Azure AD app registration
-   * the project owner has not supplied yet. It exists so the login/
-   * dashboard routing and the state machine itself can be built and tested
-   * now, ahead of the real backend.
+   * Tries to silently resume a previous sign-in (a stored refresh token
+   * for whichever account was last active) without opening a browser.
+   * Called once at startup; leaves the state at `logged-out` on any
+   * failure - reason doesn't matter here, the login screen is the answer
+   * either way.
    */
-  mockSignIn: () => Promise<void>;
-  signOut: () => void;
+  restoreSession: () => Promise<void>;
+  /** The real loopback Microsoft sign-in flow - opens the system browser. */
+  signIn: () => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
-const MOCK_SIGN_IN_DELAY_MS = 900;
-
-function delay(ms: number) {
-  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
   state: { status: "logged-out" },
   rememberMePreference: true,
+  signInStep: null,
 
   setRememberMePreference: (value) => set({ rememberMePreference: value }),
 
-  mockSignIn: async () => {
-    if (get().state.status === "authenticating") return;
-    set({ state: { status: "authenticating" } });
-    await delay(MOCK_SIGN_IN_DELAY_MS);
-    set({
-      state: {
-        status: "authenticated",
-        account: MOCK_ACCOUNT,
-        rememberMe: get().rememberMePreference,
-      },
-    });
+  restoreSession: async () => {
+    if (!isTauri) return;
+    try {
+      const account = await tryRestoreSession();
+      if (account) {
+        set({ state: { status: "authenticated", account } });
+      }
+    } catch {
+      // Stay logged out - the login screen is the right fallback for any
+      // failure here (no stored account, expired token, offline, ...).
+    }
   },
 
-  signOut: () => set({ state: { status: "logged-out" } }),
+  signIn: async () => {
+    if (get().state.status === "authenticating") return;
+    set({ state: { status: "authenticating" }, signInStep: null });
+
+    if (!isTauri) {
+      set({
+        state: {
+          status: "auth-error",
+          message: "Signing in requires the desktop app, not the browser preview.",
+        },
+        signInStep: null,
+      });
+      return;
+    }
+
+    const unlisten = await listenToSignInProgress((event) => set({ signInStep: event.type }));
+
+    try {
+      const account = await beginSignIn(get().rememberMePreference);
+      set({ state: { status: "authenticated", account }, signInStep: null });
+    } catch (err) {
+      set({ state: { status: "auth-error", message: errorMessage(err) }, signInStep: null });
+    } finally {
+      unlisten();
+    }
+  },
+
+  signOut: async () => {
+    if (isTauri) {
+      try {
+        await signOutCommand();
+      } catch {
+        // Sign-out proceeds locally either way - there's nothing the UI
+        // can usefully do about a failure to clear server-side state here.
+      }
+    }
+    set({ state: { status: "logged-out" }, signInStep: null });
+  },
 }));

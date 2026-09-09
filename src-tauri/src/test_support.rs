@@ -71,3 +71,72 @@ pub async fn spawn_mock_server(files: HashMap<String, Vec<u8>>) -> String {
     serve_mock_files(listener, files);
     format!("http://{addr}")
 }
+
+/// A canned response for `serve_mock_responses` - unlike `serve_mock_files`,
+/// lets a test simulate a non-200 status (a provider's error body, e.g. an
+/// Xbox Live 401 carrying an `XErr` code) rather than only success-or-404.
+pub struct MockResponse {
+    pub status: u16,
+    pub body: Vec<u8>,
+}
+
+impl MockResponse {
+    pub fn json(status: u16, value: &serde_json::Value) -> Self {
+        Self {
+            status,
+            body: serde_json::to_vec(value).expect("test fixture JSON must serialize"),
+        }
+    }
+}
+
+/// Same shape as `spawn_mock_server`, but each path controls its own
+/// status code via `MockResponse` instead of always answering 200.
+pub async fn spawn_mock_server_with_status(files: HashMap<String, MockResponse>) -> String {
+    let (listener, addr) = bind_mock_server().await;
+    let files = Arc::new(files);
+    tokio::spawn(async move {
+        loop {
+            let Ok((mut socket, _)) = listener.accept().await else {
+                return;
+            };
+            let files = files.clone();
+            tokio::spawn(async move {
+                let mut buf = [0u8; 4096];
+                let Ok(n) = socket.read(&mut buf).await else {
+                    return;
+                };
+                let request = String::from_utf8_lossy(&buf[..n]);
+                let path = request.split_whitespace().nth(1).unwrap_or("/").to_string();
+                match files.get(&path) {
+                    Some(response) => {
+                        let header = format!(
+                            "HTTP/1.1 {} {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                            response.status,
+                            status_reason(response.status),
+                            response.body.len()
+                        );
+                        let _ = socket.write_all(header.as_bytes()).await;
+                        let _ = socket.write_all(&response.body).await;
+                    }
+                    None => {
+                        let _ = socket
+                            .write_all(b"HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n")
+                            .await;
+                    }
+                }
+            });
+        }
+    });
+    format!("http://{addr}")
+}
+
+fn status_reason(status: u16) -> &'static str {
+    match status {
+        200 => "OK",
+        400 => "Bad Request",
+        401 => "Unauthorized",
+        403 => "Forbidden",
+        404 => "Not Found",
+        _ => "Error",
+    }
+}

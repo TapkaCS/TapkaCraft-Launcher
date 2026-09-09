@@ -188,6 +188,27 @@ pub fn update(
     Ok(meta)
 }
 
+/// Updates play history after a launch attempt completes (however it
+/// exited) - a separate write from `update` because it's system-recorded
+/// bookkeeping, not a user-initiated edit. `last_played` is passed in
+/// (rather than computed here) so this module doesn't need its own
+/// timestamp formatting - `commands::launch` reuses
+/// `core::accounts::service::now_iso8601` for both.
+pub fn record_launch(
+    instances_dir: &Path,
+    id: &str,
+    playtime_seconds_delta: u64,
+    last_played: String,
+) -> Result<InstanceMeta, InstanceError> {
+    let dir = resolve_instance_dir(instances_dir, id)?;
+    let mut meta = read_meta(&dir)?;
+    meta.launch_count += 1;
+    meta.playtime_seconds += playtime_seconds_delta;
+    meta.last_played = Some(last_played);
+    write_meta(&dir, &meta)?;
+    Ok(meta)
+}
+
 /// Permanently deletes an instance's directory and everything in it
 /// (mods, saves, config...). Confirmation is a UI-layer responsibility.
 pub fn delete(instances_dir: &Path, id: &str) -> Result<(), InstanceError> {
@@ -386,6 +407,41 @@ mod tests {
             .map(|m| m.name)
             .collect();
         assert_eq!(names, vec!["Healthy".to_string()]);
+    }
+
+    #[test]
+    fn record_launch_accumulates_playtime_and_bumps_launch_count() {
+        let root = tempfile::tempdir().unwrap();
+        let created = create(root.path(), sample_input("Played")).unwrap();
+        assert_eq!(created.launch_count, 0);
+        assert_eq!(created.playtime_seconds, 0);
+        assert!(created.last_played.is_none());
+
+        let after_first =
+            record_launch(root.path(), &created.id, 120, "2026-01-01T00:00:00Z".into()).unwrap();
+        assert_eq!(after_first.launch_count, 1);
+        assert_eq!(after_first.playtime_seconds, 120);
+        assert_eq!(
+            after_first.last_played.as_deref(),
+            Some("2026-01-01T00:00:00Z")
+        );
+
+        let after_second =
+            record_launch(root.path(), &created.id, 30, "2026-01-02T00:00:00Z".into()).unwrap();
+        assert_eq!(after_second.launch_count, 2);
+        assert_eq!(after_second.playtime_seconds, 150);
+        assert_eq!(
+            after_second.last_played.as_deref(),
+            Some("2026-01-02T00:00:00Z")
+        );
+    }
+
+    #[test]
+    fn record_launch_on_an_unknown_id_reports_not_found() {
+        let root = tempfile::tempdir().unwrap();
+        let err =
+            record_launch(root.path(), "missing", 10, "2026-01-01T00:00:00Z".into()).unwrap_err();
+        assert!(matches!(err, InstanceError::NotFound(_)));
     }
 
     #[test]

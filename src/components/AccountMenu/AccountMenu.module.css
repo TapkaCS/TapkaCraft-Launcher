@@ -127,3 +127,39 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.menuError {
+  margin: 2px 2px 4px;
+  padding: 6px 8px;
+  background: rgba(192, 57, 43, 0.12);
+  border: 1px solid var(--tc-danger);
+  border-radius: 2px;
+  color: var(--tc-danger);
+  font-size: 0.78em;
+}
+
+.otherAccountRow {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.otherAccountRow .menuItem {
+  flex: 1;
+}
+
+.forgetButton {
+  flex: none;
+  display: grid;
+  place-content: center;
+  width: 30px;
+  background: transparent;
+  border: none;
+  border-radius: 2px;
+  color: var(--tc-text-muted);
+}
+
+.forgetButton:hover {
+  background: var(--tc-panel-bg-strong);
+  color: var(--tc-danger);
+}

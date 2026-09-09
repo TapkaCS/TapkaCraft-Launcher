@@ -3,8 +3,10 @@
 //! frontend must never re-implement launcher logic itself; it only calls
 //! through commands declared here.
 
+pub mod accounts;
 pub mod instances;
 pub mod java;
+pub mod launch;
 pub mod system;
 pub mod versions;
 

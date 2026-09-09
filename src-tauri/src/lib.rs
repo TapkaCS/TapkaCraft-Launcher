@@ -18,6 +18,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(app_paths)
         .manage(http_client)
+        .manage(commands::accounts::ActiveSession::default())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             commands::get_launcher_version,
@@ -31,6 +32,14 @@ pub fn run() {
             commands::java::detect_java_runtimes,
             commands::system::get_memory_suggestion,
             commands::system::get_gpu_info,
+            commands::accounts::begin_sign_in,
+            commands::accounts::try_restore_session,
+            commands::accounts::list_accounts,
+            commands::accounts::active_account,
+            commands::accounts::switch_account,
+            commands::accounts::sign_out,
+            commands::accounts::remove_account,
+            commands::launch::launch_instance,
         ])
         .run(tauri::generate_context!())
         .expect("error while running TapkaCraft Launcher");

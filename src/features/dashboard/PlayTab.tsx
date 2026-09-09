@@ -7,8 +7,10 @@ import { RetroButton } from "@/components/RetroButton/RetroButton";
 import { RetroPanel } from "@/components/RetroPanel/RetroPanel";
 import { RetroSelect } from "@/components/RetroSelect/RetroSelect";
 import { MOCK_FEATURED_MODS, MOCK_NEWS_SLIDES } from "@/lib/mock/mockData";
-import { useInstallStore } from "@/state/installStore";
+import { useAuthStore } from "@/state/authStore";
+import { useInstallStore, type InstallProgress } from "@/state/installStore";
 import { useInstanceStore } from "@/state/instanceStore";
+import { useLaunchStore } from "@/state/launchStore";
 import { useUiStore } from "@/state/uiStore";
 
 import styles from "./PlayTab.module.css";
@@ -116,12 +118,39 @@ export function PlayTab() {
   );
 }
 
+function InstallProgressBar({ progress, label }: { progress: InstallProgress; label: string }) {
+  return (
+    <div className={styles.installProgress}>
+      <span className={styles.installProgressLabel}>
+        {progress.totalFiles > 0
+          ? `${label} ${progress.completedFiles}/${progress.totalFiles} files`
+          : `${label}…`}
+        {progress.currentLabel ? ` — ${progress.currentLabel}` : ""}
+      </span>
+      <div className={styles.installProgressTrack}>
+        <div
+          className={styles.installProgressFill}
+          style={{
+            width:
+              progress.totalFiles > 0
+                ? `${Math.min(100, (progress.completedFiles / progress.totalFiles) * 100)}%`
+                : "6%",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function PlayBar() {
   const instances = useInstanceStore((state) => state.instances);
   const selectedId = useInstanceStore((state) => state.selectedInstanceId);
   const selectInstance = useInstanceStore((state) => state.selectInstance);
   const openInstanceFolder = useInstanceStore((state) => state.openInstanceFolder);
   const [folderError, setFolderError] = useState<string | null>(null);
+
+  const authState = useAuthStore((state) => state.state);
+  const isSignedIn = authState.status === "authenticated" || authState.status === "refreshing";
 
   const installingInstanceId = useInstallStore((state) => state.installingInstanceId);
   const installPhase = useInstallStore((state) => state.phase);
@@ -130,13 +159,32 @@ function PlayBar() {
   const installedThisSession = useInstallStore((state) => state.installedThisSession);
   const install = useInstallStore((state) => state.install);
 
+  const launchingInstanceId = useLaunchStore((state) => state.launchingInstanceId);
+  const launchPhase = useLaunchStore((state) => state.phase);
+  const launchInstallProgress = useLaunchStore((state) => state.installProgress);
+  const launchError = useLaunchStore((state) => state.error);
+  const launch = useLaunchStore((state) => state.launch);
+
   const isInstallingSelected = selectedId !== null && installingInstanceId === selectedId;
+  const isLaunchingSelected = selectedId !== null && launchingInstanceId === selectedId;
+  const isBusy = installingInstanceId !== null || launchingInstanceId !== null;
   const isInstalled = selectedId !== null && installedThisSession.has(selectedId);
+
   const installLabel = isInstallingSelected
     ? "Installing…"
     : isInstalled
       ? "Installed ✓"
       : "Install";
+  const playLabel = isLaunchingSelected
+    ? launchPhase === "running"
+      ? "Playing…"
+      : "Preparing…"
+    : "Play";
+  const playTitle = !isSignedIn
+    ? "Sign in with a Microsoft account to play"
+    : isBusy && !isLaunchingSelected
+      ? "Wait for the current install/launch to finish first"
+      : "Play this profile";
 
   async function handleOpenFolder() {
     if (!selectedId) return;
@@ -154,27 +202,22 @@ function PlayBar() {
       {installPhase === "error" && installError ? (
         <p className={styles.playBarError}>{installError}</p>
       ) : null}
+      {launchPhase === "error" && launchError ? (
+        <p className={styles.playBarError}>{launchError}</p>
+      ) : null}
+
       {isInstallingSelected && installProgress ? (
+        <InstallProgressBar progress={installProgress} label="Installing…" />
+      ) : null}
+      {isLaunchingSelected && launchPhase === "preparing" && launchInstallProgress ? (
+        <InstallProgressBar progress={launchInstallProgress} label="Preparing…" />
+      ) : null}
+      {isLaunchingSelected && launchPhase === "running" ? (
         <div className={styles.installProgress}>
-          <span className={styles.installProgressLabel}>
-            {installProgress.totalFiles > 0
-              ? `Installing… ${installProgress.completedFiles}/${installProgress.totalFiles} files`
-              : "Preparing install…"}
-            {installProgress.currentLabel ? ` — ${installProgress.currentLabel}` : ""}
-          </span>
-          <div className={styles.installProgressTrack}>
-            <div
-              className={styles.installProgressFill}
-              style={{
-                width:
-                  installProgress.totalFiles > 0
-                    ? `${Math.min(100, (installProgress.completedFiles / installProgress.totalFiles) * 100)}%`
-                    : "6%",
-              }}
-            />
-          </div>
+          <span className={styles.installProgressLabel}>Minecraft is running…</span>
         </div>
       ) : null}
+
       <div className={styles.playBar}>
         <RetroSelect
           aria-label="Selected profile"
@@ -192,7 +235,7 @@ function PlayBar() {
         <RetroButton
           variant="secondary"
           icon={<Icon name="download" size={18} />}
-          disabled={!selectedId || installingInstanceId !== null}
+          disabled={!selectedId || isBusy}
           title={
             isInstalled
               ? "Re-verify this profile's Minecraft files"
@@ -208,10 +251,11 @@ function PlayBar() {
           size="lg"
           className={styles.playButton}
           icon={<Icon name="play" size={20} />}
-          disabled
-          title="Sign in with a Microsoft account to play - Microsoft sign-in arrives in a later phase"
+          disabled={!selectedId || !isSignedIn || (isBusy && !isLaunchingSelected)}
+          title={playTitle}
+          onClick={() => selectedId && void launch(selectedId)}
         >
-          Play
+          {playLabel}
         </RetroButton>
 
         <div className={styles.playBarActions}>

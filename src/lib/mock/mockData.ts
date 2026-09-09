@@ -1,20 +1,15 @@
 /**
  * Mock data used only when there is no Tauri backend to talk to (a plain
  * `vite dev`/`vite preview` browser session, not the actual app) - see
- * `isTauri` in `src/lib/tauri.ts`. `authStore.mockSignIn` always uses
- * `MOCK_ACCOUNT` (real Microsoft auth is Phase 4). `MOCK_INSTANCES` is only
+ * `isTauri` in `src/lib/tauri.ts`. `MOCK_INSTANCES` is only
  * `instanceStore.loadInstances`'s dev-mode fallback as of Phase 2 - inside
- * the real app, instances come from `InstanceService` on disk.
+ * the real app, instances come from `InstanceService` on disk. There's no
+ * mock account: Microsoft sign-in (Phase 4) has no meaningful fake
+ * equivalent, so `authStore.signIn` just reports "requires the desktop
+ * app" outside Tauri instead of pretending to authenticate.
  */
 
-import type { MinecraftAccount } from "@/types/account";
 import type { InstanceMeta } from "@/types/instance";
-
-export const MOCK_ACCOUNT: MinecraftAccount = {
-  id: "3fa7c1e2-9b4d-4b8a-8a2e-6f1d2c3b4a5e",
-  username: "glowiak",
-  provider: "microsoft",
-};
 
 export const MOCK_INSTANCES: InstanceMeta[] = [
   {

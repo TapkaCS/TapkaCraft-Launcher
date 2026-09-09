@@ -25,12 +25,23 @@ tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 directories = "6.0.0"
-reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls", "stream"] }
+reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls", "stream", "form"] }
 tokio = { version = "1.53.1", features = ["rt-multi-thread", "fs", "process", "io-util", "macros", "time", "net"] }
 sha1 = "0.10.7"
 zip = { version = "4.2.0", default-features = false, features = ["deflate"] }
 sysinfo = "0.36.1"
 futures-util = "0.3.34"
+sha2 = "0.10.9"
+base64 = "0.23.1"
+rand = "0.9.5"
+# windows-native backs onto Windows Credential Manager (the real target).
+# linux-native backs onto the kernel keyutils facility via syscalls rather
+# than a D-Bus secret-service daemon (gnome-keyring/kwallet), so it works
+# in this headless sandbox with nothing extra running - genuinely testable
+# here, not just declared. macOS's apple-native backend is left out: this
+# project has no way to build or test it.
+keyring = { version = "3.6.3", features = ["windows-native", "linux-native"] }
+time = { version = "0.3.41", features = ["formatting", "serde-well-known"] }
 
 # Windows-only: registry-based Java runtime discovery (JavaManager). Never
 # fetched/compiled for non-Windows targets.

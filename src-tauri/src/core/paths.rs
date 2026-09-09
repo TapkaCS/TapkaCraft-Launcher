@@ -78,8 +78,8 @@ impl AppPaths {
         self.portable
     }
 
-    /// Lightweight settings, account metadata, launcher preferences.
-    #[allow(dead_code)]
+    /// Lightweight settings, account metadata (`accounts.json`), launcher
+    /// preferences.
     pub fn settings_dir(&self) -> PathBuf {
         self.roaming.clone()
     }

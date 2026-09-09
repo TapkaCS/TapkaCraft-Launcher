@@ -167,3 +167,10 @@
 .suggestButton:disabled {
   opacity: 0.6;
 }
+
+.accountRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}

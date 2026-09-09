@@ -1,7 +1,6 @@
 import { AccountMenu } from "@/components/AccountMenu/AccountMenu";
 import { NewProfileDialog } from "@/components/NewProfileDialog/NewProfileDialog";
 import { PixelLogo } from "@/components/PixelLogo/PixelLogo";
-import { RetroButton } from "@/components/RetroButton/RetroButton";
 import { TopTabs } from "@/components/TopTabs/TopTabs";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { useLauncherVersion } from "@/lib/useLauncherVersion";
@@ -15,7 +14,6 @@ import { ProfilesTab } from "./ProfilesTab";
 
 export function DashboardScreen() {
   const authState = useAuthStore((state) => state.state);
-  const signOut = useAuthStore((state) => state.signOut);
   const activeTab = useUiStore((state) => state.activeTab);
   const setActiveTab = useUiStore((state) => state.setActiveTab);
   const isNewProfileDialogOpen = useUiStore((state) => state.isNewProfileDialogOpen);
@@ -33,10 +31,7 @@ export function DashboardScreen() {
       <header className={styles.header}>
         <PixelLogo size="sm" />
         <div className={styles.headerRight}>
-          <AccountMenu account={authState.account} onSignOut={signOut} />
-          <RetroButton variant="secondary" onClick={signOut}>
-            Sign Out
-          </RetroButton>
+          <AccountMenu account={authState.account} />
         </div>
       </header>
 

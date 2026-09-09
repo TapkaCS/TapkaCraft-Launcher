@@ -5,16 +5,19 @@ import { RetroButton } from "@/components/RetroButton/RetroButton";
 import { RetroCheckbox } from "@/components/RetroCheckbox/RetroCheckbox";
 import { useLauncherVersion } from "@/lib/useLauncherVersion";
 import { useAuthStore } from "@/state/authStore";
+import { SIGN_IN_STEP_LABELS } from "@/types/account";
 
 import styles from "./LoginScreen.module.css";
 
 export function LoginScreen() {
   const authState = useAuthStore((state) => state.state);
+  const signInStep = useAuthStore((state) => state.signInStep);
   const rememberMe = useAuthStore((state) => state.rememberMePreference);
   const setRememberMe = useAuthStore((state) => state.setRememberMePreference);
-  const mockSignIn = useAuthStore((state) => state.mockSignIn);
+  const signIn = useAuthStore((state) => state.signIn);
   const version = useLauncherVersion();
   const isAuthenticating = authState.status === "authenticating";
+  const statusLabel = signInStep ? SIGN_IN_STEP_LABELS[signInStep] : "Signing in…";
 
   return (
     <div className={`${styles.screen} tc-dirt-bg`}>
@@ -32,10 +35,10 @@ export function LoginScreen() {
           size="lg"
           fullWidth
           icon={<Icon name="microsoft" size={20} />}
-          onClick={() => void mockSignIn()}
+          onClick={() => void signIn()}
           disabled={isAuthenticating}
         >
-          {isAuthenticating ? "Signing in…" : "Sign in with Microsoft"}
+          {isAuthenticating ? statusLabel : "Sign in with Microsoft"}
         </RetroButton>
 
         <div className={styles.rememberRow}>
