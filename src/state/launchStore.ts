@@ -20,6 +20,15 @@ interface LaunchState {
    * install looks and behaves identically to an explicit one.
    */
   installProgress: InstallProgress | null;
+  /**
+   * `launch_instance` runs at most two download batches back to back on
+   * this same event stream - the profile's Minecraft files, then (only if
+   * no compatible Java was found) a Java runtime - each starting with its
+   * own `started` event. Counting those tells the two apart so the label
+   * can say which is running instead of the progress just silently
+   * resetting partway through.
+   */
+  preparingLabel: string | null;
   logLines: string[];
   error: string | null;
   exitCode: number | null;
@@ -35,6 +44,7 @@ export const useLaunchStore = create<LaunchState>((set, get) => ({
   launchingInstanceId: null,
   phase: "idle",
   installProgress: null,
+  preparingLabel: null,
   logLines: [],
   error: null,
   exitCode: null,
@@ -53,13 +63,20 @@ export const useLaunchStore = create<LaunchState>((set, get) => ({
       launchingInstanceId: id,
       phase: "preparing",
       installProgress: null,
+      preparingLabel: null,
       logLines: [],
       error: null,
       exitCode: null,
     });
 
+    let installBatchCount = 0;
     const unlistenInstall = await listenToInstallProgress((event) => {
-      set((state) => ({ installProgress: applyInstallProgress(state.installProgress, event) }));
+      if (event.type === "started") installBatchCount += 1;
+      set((state) => ({
+        installProgress: applyInstallProgress(state.installProgress, event),
+        preparingLabel:
+          installBatchCount <= 1 ? "Downloading Minecraft…" : "Downloading a compatible Java…",
+      }));
     });
     const unlistenLaunch = await listenToLaunchEvents((event) => {
       if (event.type === "started") {

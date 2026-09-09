@@ -162,6 +162,7 @@ function PlayBar() {
   const launchingInstanceId = useLaunchStore((state) => state.launchingInstanceId);
   const launchPhase = useLaunchStore((state) => state.phase);
   const launchInstallProgress = useLaunchStore((state) => state.installProgress);
+  const preparingLabel = useLaunchStore((state) => state.preparingLabel);
   const launchError = useLaunchStore((state) => state.error);
   const launch = useLaunchStore((state) => state.launch);
 
@@ -210,7 +211,10 @@ function PlayBar() {
         <InstallProgressBar progress={installProgress} label="Installing…" />
       ) : null}
       {isLaunchingSelected && launchPhase === "preparing" && launchInstallProgress ? (
-        <InstallProgressBar progress={launchInstallProgress} label="Preparing…" />
+        <InstallProgressBar
+          progress={launchInstallProgress}
+          label={preparingLabel ?? "Preparing…"}
+        />
       ) : null}
       {isLaunchingSelected && launchPhase === "running" ? (
         <div className={styles.installProgress}>

@@ -14,7 +14,8 @@ use crate::core::accounts::{oauth, service as account_service, AccountError};
 use crate::core::downloads::{DownloadEvent, ProgressSink};
 use crate::core::instances::model::LoaderKind;
 use crate::core::instances::service::{self as instance_service, InstanceError};
-use crate::core::java::detect;
+use crate::core::java::manifest::RUNTIME_MANIFEST_URL;
+use crate::core::java::{detect, install as java_install, JavaInstallError};
 use crate::core::launch::{self, LaunchEventSink, LaunchParams};
 use crate::core::paths::AppPaths;
 use crate::core::versions::install::{ensure_installed, InstallPaths};
@@ -30,8 +31,8 @@ pub enum LaunchCommandError {
     Version(VersionError),
     Account(AccountError),
     Launch(launch::LaunchError),
+    JavaInstall(JavaInstallError),
     NotSignedIn,
-    NoCompatibleJava { required_major: u32 },
     UnsupportedLoader { loader: &'static str },
 }
 
@@ -42,11 +43,8 @@ impl fmt::Display for LaunchCommandError {
             Self::Version(err) => write!(f, "{err}"),
             Self::Account(err) => write!(f, "{err}"),
             Self::Launch(err) => write!(f, "{err}"),
+            Self::JavaInstall(err) => write!(f, "{err}"),
             Self::NotSignedIn => write!(f, "Sign in with a Microsoft account first."),
-            Self::NoCompatibleJava { required_major } => write!(
-                f,
-                "No installed Java runtime meets this version's requirement (Java {required_major}+). Install one and try again."
-            ),
             Self::UnsupportedLoader { loader } => write!(
                 f,
                 "Launching {loader} instances isn't supported yet - only Vanilla can be launched so far."
@@ -78,6 +76,12 @@ impl From<AccountError> for LaunchCommandError {
 impl From<launch::LaunchError> for LaunchCommandError {
     fn from(err: launch::LaunchError) -> Self {
         Self::Launch(err)
+    }
+}
+
+impl From<JavaInstallError> for LaunchCommandError {
+    fn from(err: JavaInstallError) -> Self {
+        Self::JavaInstall(err)
     }
 }
 
@@ -178,16 +182,44 @@ pub async fn launch_instance(
     let _ = install_forwarder.await;
     let installed = installed?;
 
-    let required_major = installed
+    // Versions old enough to predate the `javaVersion` field (pre-1.17)
+    // don't name a component - "jre-legacy" (Java 8) is what Mojang's own
+    // launcher falls back to for exactly those, so this does too.
+    let (required_major, component) = installed
         .version_info
         .java_version
         .as_ref()
-        .map(|req| req.major_version)
-        .unwrap_or(8);
+        .map(|req| (req.major_version, req.component.clone()))
+        .unwrap_or((8, "jre-legacy".to_string()));
+
     let runtimes = detect::detect_all(&app_paths.runtimes_dir());
-    let runtime = detect::best_match(&runtimes, required_major)
-        .cloned()
-        .ok_or(LaunchCommandError::NoCompatibleJava { required_major })?;
+    let runtime = match detect::best_match(&runtimes, required_major) {
+        Some(runtime) => runtime.clone(),
+        None => {
+            // No compatible Java on this machine - fetch and install the
+            // matching runtime from Mojang ourselves, streaming progress
+            // over the same event stream the version install just used.
+            let (java_tx, mut java_rx) = tokio::sync::mpsc::unbounded_channel::<DownloadEvent>();
+            let java_forward_app = app.clone();
+            let java_forwarder = tokio::spawn(async move {
+                while let Some(event) = java_rx.recv().await {
+                    let _ = java_forward_app.emit(INSTALL_PROGRESS_EVENT, event);
+                }
+            });
+            let installed_runtime = java_install::install_runtime(
+                &client,
+                RUNTIME_MANIFEST_URL,
+                &app_paths.runtimes_dir(),
+                &component,
+                required_major,
+                concurrency,
+                ProgressSink::new(java_tx),
+            )
+            .await;
+            let _ = java_forwarder.await;
+            installed_runtime?
+        }
+    };
 
     let instance_dir = instance_service::resolve_instance_dir(&app_paths.instances_dir(), &id)?;
 

@@ -97,7 +97,8 @@ export function JavaSection() {
         ) : (
           <div className={styles.emptyState}>
             No Java runtimes detected on this machine (checked PATH, JAVA_HOME, and known install
-            locations).
+            locations). Not a problem by itself - TapkaCraft downloads a matching Java automatically
+            the first time a profile needs one it can't find.
           </div>
         )}
       </div>
