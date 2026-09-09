@@ -6,9 +6,15 @@ edition = "2021"
 rust-version = "1.77"
 publish = false
 
+# staticlib/cdylib (Tauri's mobile-template default) are intentionally left
+# out: this project has no Android/iOS target in scope, and on the
+# windows-gnu target a cdylib here re-exports the entire transitive public
+# API surface (windows-rs alone is enormous), blowing past the PE format's
+# 65535-export ceiling. Re-add ["staticlib", "cdylib", "rlib"] if/when
+# mobile support is actually built.
 [lib]
 name = "tapkacraft_launcher_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
