@@ -1,0 +1,72 @@
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mark {
+  image-rendering: pixelated;
+  flex: none;
+}
+
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  font-family: var(--tc-font-pixel);
+  white-space: nowrap;
+}
+
+.primary {
+  color: #f4f1e8;
+  text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.55);
+}
+
+.secondary {
+  color: #b9b39f;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.sm .mark {
+  width: 26px;
+  height: 26px;
+}
+.sm .primary {
+  font-size: 12px;
+}
+.sm .secondary {
+  font-size: 8px;
+  margin-top: 3px;
+}
+
+.md .mark {
+  width: 42px;
+  height: 42px;
+}
+.md .primary {
+  font-size: 17px;
+}
+.md .secondary {
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.lg .mark {
+  width: 80px;
+  height: 80px;
+}
+.lg .primary {
+  font-size: 32px;
+}
+.lg .secondary {
+  font-size: 18px;
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+
+[data-theme="modern"] .primary {
+  text-shadow: none;
+}
+[data-theme="modern"] .secondary {
+  text-shadow: none;
+}

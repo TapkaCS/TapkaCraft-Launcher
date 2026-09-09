@@ -1,0 +1,61 @@
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 32px;
+  position: relative;
+}
+
+.logo {
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
+}
+
+.errorBanner {
+  margin: 0 0 16px;
+  padding: 8px 10px;
+  background: rgba(192, 57, 43, 0.14);
+  border: 1px solid var(--tc-danger);
+  border-radius: var(--tc-radius);
+  color: var(--tc-danger);
+  font-size: 0.85em;
+  text-align: center;
+}
+
+.tagline {
+  margin: 0 0 22px;
+  text-align: center;
+  font-size: 1.15em;
+  color: var(--tc-dialog-text);
+}
+
+.rememberRow {
+  margin-top: 22px;
+}
+
+.helpLink {
+  display: block;
+  margin: 20px auto 0;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--tc-link);
+  font-size: 0.85em;
+  text-decoration: underline;
+}
+
+.helpLink:disabled {
+  color: var(--tc-dialog-text-muted);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.version {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  font-size: 0.8em;
+  color: var(--tc-text-muted);
+}

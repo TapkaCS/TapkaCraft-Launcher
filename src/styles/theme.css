@@ -1,0 +1,187 @@
+/**
+ * TapkaCraft design tokens.
+ *
+ * Retro (default) and Modern are the same component tree with a different
+ * token set selected by `[data-theme]` on <html> - see `useSettingsStore`'s
+ * `appearance.theme` and `ThemeProvider`. Nothing in this file is
+ * component-specific; components only ever read `var(--tc-*)`.
+ */
+
+:root,
+[data-theme="retro"] {
+  color-scheme: dark;
+
+  /* Background */
+  --tc-dirt-tile: url("../assets/textures/dirt.png");
+  --tc-dirt-tile-size: 48px;
+  --tc-app-bg: #241a12;
+
+  /* Panels / chrome */
+  --tc-panel-bg: #3c3a37;
+  --tc-panel-bg-strong: #262421;
+  --tc-panel-border-light: #74716c;
+  --tc-panel-border-dark: #141311;
+  --tc-panel-text: #f1efe9;
+  --tc-panel-text-muted: #b3ada2;
+
+  /* The classic light-gray login dialog */
+  --tc-dialog-bg: #c6c2ba;
+  --tc-dialog-border-light: #efece5;
+  --tc-dialog-border-dark: #726e66;
+  --tc-dialog-text: #201d18;
+  --tc-dialog-text-muted: #514d46;
+
+  /* Cards (mod cards, profile rows) */
+  --tc-card-bg: #322f2b;
+  --tc-card-border: #4a463f;
+  --tc-card-hover-border: #6f6a5f;
+  --tc-card-selected-border: #7fd646;
+  --tc-card-selected-bg: #3a4a2a;
+
+  /* Text */
+  --tc-text-primary: #f1efe9;
+  --tc-text-secondary: #c3beb3;
+  --tc-text-muted: #8f8a80;
+  --tc-link: #7fbaff;
+
+  /* Brand green (Play button, favorites, accents) */
+  --tc-green-500: #4caf1f;
+  --tc-green-600: #3d8f18;
+  --tc-green-700: #2c6b11;
+  --tc-green-highlight: #8be555;
+  --tc-green-text: #0c1a05;
+
+  /* Microsoft sign-in button */
+  --tc-ms-blue: #1f5fbf;
+  --tc-ms-blue-hover: #2a70d6;
+  --tc-ms-blue-text: #ffffff;
+
+  /* Danger / destructive actions */
+  --tc-danger: #c0392b;
+  --tc-danger-hover: #d8493a;
+
+  /* Bevel shading used by RetroButton/RetroPanel */
+  --tc-bevel-light: rgba(255, 255, 255, 0.4);
+  --tc-bevel-dark: rgba(0, 0, 0, 0.5);
+  --tc-bevel-width: 2px;
+  --tc-radius: 2px;
+
+  /* Typography */
+  --tc-font-pixel: "Press Start 2P", "VT323", monospace;
+  --tc-font-body: "VT323", "Press Start 2P", monospace;
+  --tc-font-size-base: 19px;
+
+  --tc-focus-ring: 0 0 0 2px var(--tc-app-bg), 0 0 0 4px var(--tc-green-highlight);
+}
+
+[data-theme="modern"] {
+  color-scheme: dark;
+
+  --tc-dirt-tile: none;
+  --tc-app-bg: #1b1d21;
+
+  --tc-panel-bg: #24272c;
+  --tc-panel-bg-strong: #17181b;
+  --tc-panel-border-light: #383c43;
+  --tc-panel-border-dark: #0e0f11;
+  --tc-panel-text: #eef0f2;
+  --tc-panel-text-muted: #9aa0a8;
+
+  --tc-dialog-bg: #24272c;
+  --tc-dialog-border-light: #383c43;
+  --tc-dialog-border-dark: #0e0f11;
+  --tc-dialog-text: #eef0f2;
+  --tc-dialog-text-muted: #9aa0a8;
+
+  --tc-card-bg: #24272c;
+  --tc-card-border: #33363c;
+  --tc-card-hover-border: #4a4f57;
+  --tc-card-selected-border: #59c93d;
+  --tc-card-selected-bg: #1e2b18;
+
+  --tc-text-primary: #eef0f2;
+  --tc-text-secondary: #b5bac1;
+  --tc-text-muted: #767b83;
+  --tc-link: #6ea8fe;
+
+  --tc-green-500: #45a521;
+  --tc-green-600: #398a1b;
+  --tc-green-700: #2a6813;
+  --tc-green-highlight: #6fd642;
+  --tc-green-text: #0c1a05;
+
+  --tc-ms-blue: #2564cf;
+  --tc-ms-blue-hover: #3574e0;
+  --tc-ms-blue-text: #ffffff;
+
+  --tc-danger: #d64545;
+  --tc-danger-hover: #e35555;
+
+  --tc-bevel-light: rgba(255, 255, 255, 0.08);
+  --tc-bevel-dark: rgba(0, 0, 0, 0.3);
+  --tc-bevel-width: 1px;
+  --tc-radius: 8px;
+
+  --tc-font-pixel: "Segoe UI", system-ui, sans-serif;
+  --tc-font-body: "Segoe UI", system-ui, sans-serif;
+  --tc-font-size-base: 14px;
+
+  --tc-focus-ring: 0 0 0 2px var(--tc-app-bg), 0 0 0 4px var(--tc-green-highlight);
+}
+
+/* Shared utility: the tiled dirt background used by the login screen and
+   any other full-bleed retro surface. Modern theme flattens it to a plain
+   gradient instead of removing the class from markup. */
+.tc-dirt-bg {
+  background-color: var(--tc-app-bg);
+  background-image: var(--tc-dirt-tile);
+  background-size: var(--tc-dirt-tile-size) var(--tc-dirt-tile-size);
+  background-repeat: repeat;
+  image-rendering: pixelated;
+}
+
+[data-theme="modern"] .tc-dirt-bg {
+  background-image: linear-gradient(160deg, #202329 0%, #16181b 100%);
+}
+
+.tc-bevel-out {
+  border-style: solid;
+  border-width: var(--tc-bevel-width);
+  border-top-color: var(--tc-bevel-light);
+  border-left-color: var(--tc-bevel-light);
+  border-bottom-color: var(--tc-bevel-dark);
+  border-right-color: var(--tc-bevel-dark);
+}
+
+.tc-bevel-in {
+  border-style: solid;
+  border-width: var(--tc-bevel-width);
+  border-top-color: var(--tc-bevel-dark);
+  border-left-color: var(--tc-bevel-dark);
+  border-bottom-color: var(--tc-bevel-light);
+  border-right-color: var(--tc-bevel-light);
+}
+
+/* Compact mode (Settings -> Appearance) tightens the base type size that
+   the rest of the app's spacing/line-height derives from. Combined with
+   the theme attribute (rather than relying on source order alone) so it
+   reliably wins regardless of stylesheet ordering. */
+[data-theme="retro"][data-compact="true"] {
+  --tc-font-size-base: 16px;
+}
+
+[data-theme="modern"][data-compact="true"] {
+  --tc-font-size-base: 13px;
+}
+
+.tc-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,0 +1,55 @@
+.panel {
+  background: var(--tc-panel-bg);
+  border-radius: var(--tc-radius);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.raised {
+  border-style: solid;
+  border-width: var(--tc-bevel-width);
+  border-top-color: var(--tc-bevel-light);
+  border-left-color: var(--tc-bevel-light);
+  border-bottom-color: var(--tc-bevel-dark);
+  border-right-color: var(--tc-bevel-dark);
+}
+
+.sunken {
+  background: var(--tc-panel-bg-strong);
+  border-style: solid;
+  border-width: var(--tc-bevel-width);
+  border-top-color: var(--tc-bevel-dark);
+  border-left-color: var(--tc-bevel-dark);
+  border-bottom-color: var(--tc-bevel-light);
+  border-right-color: var(--tc-bevel-light);
+}
+
+.flat {
+  border: 1px solid var(--tc-panel-border-dark);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--tc-panel-border-dark);
+  background: var(--tc-panel-bg-strong);
+  color: var(--tc-text-primary);
+  font-size: 0.95em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.body {
+  padding: 14px;
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+.noPadding .body {
+  padding: 0;
+}

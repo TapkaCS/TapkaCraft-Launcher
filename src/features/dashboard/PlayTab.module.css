@@ -1,0 +1,157 @@
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 18px;
+  min-height: 0;
+}
+
+.leftColumn {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.profilesPanel {
+  flex: 1;
+}
+
+.newProfileButton {
+  background: var(--tc-panel-bg);
+  border: 1px solid var(--tc-panel-border-light);
+  color: var(--tc-text-primary);
+  border-radius: var(--tc-radius);
+  padding: 5px 10px;
+  font-size: 0.85em;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.newProfileButton:hover {
+  border-color: var(--tc-green-highlight);
+  color: var(--tc-green-highlight);
+}
+
+.profileList {
+  padding: 10px;
+}
+
+.mainColumn {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Only the news/featured content scrolls - the play bar below it stays
+   pinned and visible even at the window's minimum height (1024x650). */
+.scrollArea {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.newsBanner {
+  position: relative;
+  border-radius: var(--tc-radius);
+  overflow: hidden;
+  min-height: 190px;
+  background: linear-gradient(180deg, #ffb066 0%, #f2665a 32%, #7a4a6b 68%, #241a30 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 22px 26px;
+  border: 1px solid var(--tc-panel-border-dark);
+  flex: none;
+}
+
+.newsTitle {
+  margin: 0;
+  font-family: var(--tc-font-pixel);
+  font-size: 1.4em;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+.newsSubtitle {
+  margin: 10px 0 0;
+  font-size: 1em;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.newsDots {
+  position: absolute;
+  left: 26px;
+  bottom: 16px;
+  display: flex;
+  gap: 6px;
+}
+
+.newsDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.newsDotActive {
+  background: var(--tc-green-highlight);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.05em;
+}
+
+.browseLink {
+  background: none;
+  border: none;
+  color: var(--tc-link);
+  font-size: 0.85em;
+}
+
+.browseLink:hover {
+  text-decoration: underline;
+}
+
+.modGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.playBar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-top: 4px;
+  background: var(--tc-panel-bg-strong);
+  border: 1px solid var(--tc-panel-border-dark);
+  border-radius: var(--tc-radius);
+}
+
+.playBarSelect {
+  min-width: 220px;
+}
+
+.playButton {
+  flex: 1;
+  max-width: 340px;
+}
+
+.playBarActions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}

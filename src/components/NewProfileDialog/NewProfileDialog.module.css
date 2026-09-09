@@ -1,0 +1,60 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 8, 6, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.dialog {
+  width: min(440px, 92vw);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tc-dialog-text-muted);
+}
+
+.input {
+  background: #fff;
+  border-style: solid;
+  border-width: var(--tc-bevel-width);
+  border-top-color: var(--tc-dialog-border-dark);
+  border-left-color: var(--tc-dialog-border-dark);
+  border-bottom-color: var(--tc-dialog-border-light);
+  border-right-color: var(--tc-dialog-border-light);
+  border-radius: var(--tc-radius);
+  padding: 9px 10px;
+  font-size: 15px;
+  color: #1a1a1a;
+}
+
+.note {
+  margin: 0;
+  font-size: 0.78em;
+  line-height: 1.4;
+  color: var(--tc-dialog-text-muted);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}

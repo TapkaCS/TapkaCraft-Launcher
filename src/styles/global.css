@@ -1,0 +1,73 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--tc-text-primary);
+  background: var(--tc-app-bg);
+  font-family: var(--tc-font-body);
+  font-size: var(--tc-font-size-base);
+  line-height: 1.4;
+  overflow: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-width: 1024px;
+  min-height: 650px;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: var(--tc-link);
+}
+
+::selection {
+  background: var(--tc-green-500);
+  color: var(--tc-green-text);
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--tc-panel-bg-strong);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--tc-panel-border-light);
+  border: 2px solid var(--tc-panel-bg-strong);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--tc-focus-ring);
+}

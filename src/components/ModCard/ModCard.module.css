@@ -1,0 +1,62 @@
+.card {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: var(--tc-card-bg);
+  border: 1px solid var(--tc-card-border);
+  border-radius: var(--tc-radius);
+  min-width: 0;
+}
+
+.card:hover {
+  border-color: var(--tc-card-hover-border);
+}
+
+.badge {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  display: grid;
+  place-content: center;
+  font-family: var(--tc-font-pixel);
+  font-size: 15px;
+  color: #fff;
+  background: var(--accent, var(--tc-green-500));
+}
+
+.info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05em;
+}
+
+.author {
+  margin: 0;
+  font-size: 0.78em;
+  color: var(--tc-text-muted);
+}
+
+.description {
+  margin: 4px 0 0;
+  font-size: 0.85em;
+  color: var(--tc-text-secondary);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.stats {
+  margin: 6px 0 0;
+  font-size: 0.8em;
+  color: var(--tc-text-muted);
+  display: flex;
+  gap: 12px;
+}

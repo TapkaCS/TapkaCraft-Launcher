@@ -1,0 +1,38 @@
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 20px;
+  min-height: 0;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navItem {
+  text-align: left;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--tc-radius);
+  color: var(--tc-text-secondary);
+  font-size: 0.95em;
+}
+
+.navItem:hover {
+  background: var(--tc-panel-bg-strong);
+  color: var(--tc-text-primary);
+}
+
+.navItemActive {
+  background: var(--tc-card-selected-bg);
+  color: var(--tc-green-highlight);
+}
+
+.content {
+  overflow: auto;
+  min-height: 0;
+}

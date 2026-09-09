@@ -1,0 +1,21 @@
+.dialog {
+  background: var(--tc-dialog-bg);
+  color: var(--tc-dialog-text);
+  border-style: solid;
+  border-width: 3px;
+  border-top-color: var(--tc-dialog-border-light);
+  border-left-color: var(--tc-dialog-border-light);
+  border-bottom-color: var(--tc-dialog-border-dark);
+  border-right-color: var(--tc-dialog-border-dark);
+  border-radius: var(--tc-radius);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  padding: 34px 40px;
+  width: min(420px, 100%);
+}
+
+.title {
+  margin: 0 0 18px;
+  font-size: 1.15em;
+  text-align: center;
+  line-height: 1.35;
+}

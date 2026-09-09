@@ -1,0 +1,129 @@
+.wrapper {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: var(--tc-panel-bg-strong);
+  border: 1px solid var(--tc-panel-border-dark);
+  border-radius: var(--tc-radius);
+  color: var(--tc-text-primary);
+}
+
+.trigger:hover {
+  border-color: var(--tc-panel-border-light);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 3px;
+  background: var(--tc-green-500);
+  color: var(--tc-green-text);
+  display: grid;
+  place-content: center;
+  font-family: var(--tc-font-pixel);
+  font-size: 13px;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.username {
+  font-size: 0.95em;
+  line-height: 1.1;
+}
+
+.provider {
+  font-size: 0.72em;
+  color: var(--tc-text-muted);
+  line-height: 1.1;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 240px;
+  background: var(--tc-panel-bg);
+  border: 1px solid var(--tc-panel-border-dark);
+  border-radius: var(--tc-radius);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+  padding: 6px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menuItem {
+  text-align: left;
+  padding: 9px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 2px;
+  color: var(--tc-text-primary);
+  font-size: 0.95em;
+}
+
+.menuItem:hover:not(:disabled) {
+  background: var(--tc-panel-bg-strong);
+}
+
+.menuItem:disabled {
+  color: var(--tc-text-muted);
+  cursor: not-allowed;
+}
+
+.menuHint {
+  display: block;
+  font-size: 0.75em;
+  color: var(--tc-text-muted);
+  margin-top: 2px;
+}
+
+.danger {
+  color: var(--tc-danger);
+}
+
+.separator {
+  height: 1px;
+  background: var(--tc-panel-border-dark);
+  margin: 4px 2px;
+}
+
+.info {
+  background: var(--tc-panel-bg-strong);
+  border-radius: 2px;
+  padding: 8px 10px;
+  margin: 2px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info p {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  font-size: 0.82em;
+}
+
+.info span {
+  color: var(--tc-text-muted);
+}
+
+.info strong {
+  font-weight: normal;
+  color: var(--tc-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

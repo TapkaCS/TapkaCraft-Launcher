@@ -1,0 +1,122 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 640px;
+}
+
+.sectionTitle {
+  margin: 0 0 10px;
+  font-size: 1.15em;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--tc-panel-border-dark);
+}
+
+.checkboxRow {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--tc-panel-border-dark);
+}
+
+.rowLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rowLabel strong {
+  font-weight: normal;
+  font-size: 0.95em;
+}
+
+.rowLabel span {
+  font-size: 0.78em;
+  color: var(--tc-text-muted);
+}
+
+.rowControl {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.numberInput {
+  width: 90px;
+  background: var(--tc-panel-bg-strong);
+  border-style: solid;
+  border-width: var(--tc-bevel-width);
+  border-top-color: var(--tc-bevel-dark);
+  border-left-color: var(--tc-bevel-dark);
+  border-bottom-color: var(--tc-bevel-light);
+  border-right-color: var(--tc-bevel-light);
+  border-radius: var(--tc-radius);
+  padding: 7px 8px;
+  color: var(--tc-text-primary);
+  font-size: 14px;
+}
+
+.textInput {
+  flex: 1;
+  background: var(--tc-panel-bg-strong);
+  border-style: solid;
+  border-width: var(--tc-bevel-width);
+  border-top-color: var(--tc-bevel-dark);
+  border-left-color: var(--tc-bevel-dark);
+  border-bottom-color: var(--tc-bevel-light);
+  border-right-color: var(--tc-bevel-light);
+  border-radius: var(--tc-radius);
+  padding: 8px 10px;
+  color: var(--tc-text-primary);
+  font-size: 14px;
+}
+
+.textInput:disabled {
+  opacity: 0.5;
+}
+
+.textArea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  background: var(--tc-panel-bg-strong);
+  border-style: solid;
+  border-width: var(--tc-bevel-width);
+  border-top-color: var(--tc-bevel-dark);
+  border-left-color: var(--tc-bevel-dark);
+  border-bottom-color: var(--tc-bevel-light);
+  border-right-color: var(--tc-bevel-light);
+  border-radius: var(--tc-radius);
+  padding: 10px;
+  color: var(--tc-text-primary);
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.emptyState {
+  padding: 18px;
+  text-align: center;
+  color: var(--tc-text-muted);
+  font-size: 0.85em;
+  border: 1px dashed var(--tc-panel-border-light);
+  border-radius: var(--tc-radius);
+}
+
+.hint {
+  margin: 4px 0 0;
+  font-size: 0.78em;
+  color: var(--tc-text-muted);
+  line-height: 1.4;
+}
+
+.pair {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

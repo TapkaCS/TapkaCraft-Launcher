@@ -1,0 +1,27 @@
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: var(--tc-panel-bg-strong);
+  border: 1px solid var(--tc-panel-border-dark);
+  border-bottom: none;
+  border-radius: var(--tc-radius) var(--tc-radius) 0 0;
+  color: var(--tc-text-secondary);
+  font-size: 0.95em;
+}
+
+.tab:hover {
+  color: var(--tc-text-primary);
+}
+
+.active {
+  background: var(--tc-panel-bg);
+  color: var(--tc-green-highlight);
+  box-shadow: inset 0 2px 0 var(--tc-green-500);
+}

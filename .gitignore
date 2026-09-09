@@ -1,0 +1,31 @@
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+
+# Vite
+.vite/
+
+# Rust / Tauri
+src-tauri/target/
+src-tauri/gen/
+
+# Editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+
+# Logs
+logs/
+*.log
+
+# TapkaCraft launcher runtime data (never commit user instance/account data)
+data/
