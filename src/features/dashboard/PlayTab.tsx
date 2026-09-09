@@ -7,6 +7,7 @@ import { RetroButton } from "@/components/RetroButton/RetroButton";
 import { RetroPanel } from "@/components/RetroPanel/RetroPanel";
 import { RetroSelect } from "@/components/RetroSelect/RetroSelect";
 import { MOCK_FEATURED_MODS, MOCK_NEWS_SLIDES } from "@/lib/mock/mockData";
+import { useInstallStore } from "@/state/installStore";
 import { useInstanceStore } from "@/state/instanceStore";
 import { useUiStore } from "@/state/uiStore";
 
@@ -122,6 +123,21 @@ function PlayBar() {
   const openInstanceFolder = useInstanceStore((state) => state.openInstanceFolder);
   const [folderError, setFolderError] = useState<string | null>(null);
 
+  const installingInstanceId = useInstallStore((state) => state.installingInstanceId);
+  const installPhase = useInstallStore((state) => state.phase);
+  const installProgress = useInstallStore((state) => state.progress);
+  const installError = useInstallStore((state) => state.error);
+  const installedThisSession = useInstallStore((state) => state.installedThisSession);
+  const install = useInstallStore((state) => state.install);
+
+  const isInstallingSelected = selectedId !== null && installingInstanceId === selectedId;
+  const isInstalled = selectedId !== null && installedThisSession.has(selectedId);
+  const installLabel = isInstallingSelected
+    ? "Installing…"
+    : isInstalled
+      ? "Installed ✓"
+      : "Install";
+
   async function handleOpenFolder() {
     if (!selectedId) return;
     setFolderError(null);
@@ -135,6 +151,30 @@ function PlayBar() {
   return (
     <div className={styles.playBarWrap}>
       {folderError ? <p className={styles.playBarError}>{folderError}</p> : null}
+      {installPhase === "error" && installError ? (
+        <p className={styles.playBarError}>{installError}</p>
+      ) : null}
+      {isInstallingSelected && installProgress ? (
+        <div className={styles.installProgress}>
+          <span className={styles.installProgressLabel}>
+            {installProgress.totalFiles > 0
+              ? `Installing… ${installProgress.completedFiles}/${installProgress.totalFiles} files`
+              : "Preparing install…"}
+            {installProgress.currentLabel ? ` — ${installProgress.currentLabel}` : ""}
+          </span>
+          <div className={styles.installProgressTrack}>
+            <div
+              className={styles.installProgressFill}
+              style={{
+                width:
+                  installProgress.totalFiles > 0
+                    ? `${Math.min(100, (installProgress.completedFiles / installProgress.totalFiles) * 100)}%`
+                    : "6%",
+              }}
+            />
+          </div>
+        </div>
+      ) : null}
       <div className={styles.playBar}>
         <RetroSelect
           aria-label="Selected profile"
@@ -150,12 +190,26 @@ function PlayBar() {
         </RetroSelect>
 
         <RetroButton
+          variant="secondary"
+          icon={<Icon name="download" size={18} />}
+          disabled={!selectedId || installingInstanceId !== null}
+          title={
+            isInstalled
+              ? "Re-verify this profile's Minecraft files"
+              : "Download this profile's Minecraft files (client, libraries, assets)"
+          }
+          onClick={() => selectedId && void install(selectedId)}
+        >
+          {installLabel}
+        </RetroButton>
+
+        <RetroButton
           variant="primary"
           size="lg"
           className={styles.playButton}
           icon={<Icon name="play" size={20} />}
           disabled
-          title="Launching Minecraft needs VersionService, JavaManager and LaunchEngine, which land in Phase 3"
+          title="Sign in with a Microsoft account to play - Microsoft sign-in arrives in a later phase"
         >
           Play
         </RetroButton>

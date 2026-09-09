@@ -20,4 +20,5 @@ pub mod java;
 pub mod launch;
 pub mod modpacks;
 pub mod modrinth;
+pub mod system;
 pub mod versions;

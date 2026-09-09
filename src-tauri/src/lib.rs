@@ -1,5 +1,7 @@
 mod commands;
 mod core;
+#[cfg(test)]
+mod test_support;
 
 use core::paths::AppPaths;
 
@@ -11,9 +13,11 @@ pub fn run() {
         .unwrap_or_else(|| std::path::PathBuf::from("."));
     let args: Vec<String> = std::env::args().collect();
     let app_paths = AppPaths::resolve(&exe_dir, &args);
+    let http_client = reqwest::Client::new();
 
     tauri::Builder::default()
         .manage(app_paths)
+        .manage(http_client)
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             commands::get_launcher_version,
@@ -22,6 +26,11 @@ pub fn run() {
             commands::instances::update_instance,
             commands::instances::delete_instance,
             commands::instances::open_instance_folder,
+            commands::versions::get_version_manifest,
+            commands::versions::install_instance,
+            commands::java::detect_java_runtimes,
+            commands::system::get_memory_suggestion,
+            commands::system::get_gpu_info,
         ])
         .run(tauri::generate_context!())
         .expect("error while running TapkaCraft Launcher");

@@ -1,11 +1,69 @@
+import { useEffect, useState } from "react";
+
 import { RetroCheckbox } from "@/components/RetroCheckbox/RetroCheckbox";
+import { detectJavaRuntimes } from "@/lib/api/java";
+import { getMemorySuggestion } from "@/lib/api/system";
+import { isTauri } from "@/lib/tauri";
 import { useSettingsStore } from "@/state/settingsStore";
+import type { DetectedRuntime } from "@/types/java";
+import type { MemorySuggestion } from "@/types/system";
 
 import styles from "./SettingsSections.module.css";
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
 
 export function JavaSection() {
   const java = useSettingsStore((state) => state.settings.java);
   const updateJava = useSettingsStore((state) => state.updateJava);
+
+  const [runtimes, setRuntimes] = useState<DetectedRuntime[] | null>(null);
+  const [runtimesLoading, setRuntimesLoading] = useState(isTauri);
+  const [runtimesError, setRuntimesError] = useState<string | null>(null);
+
+  const [suggestion, setSuggestion] = useState<MemorySuggestion | null>(null);
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  const [suggestionLoading, setSuggestionLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isTauri) return;
+    let cancelled = false;
+    detectJavaRuntimes()
+      .then((detected) => {
+        if (!cancelled) setRuntimes(detected);
+      })
+      .catch((err) => {
+        if (!cancelled) setRuntimesError(errorMessage(err));
+      })
+      .finally(() => {
+        if (!cancelled) setRuntimesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleSuggestMemory() {
+    if (!isTauri) {
+      setSuggestionError("Suggesting memory from system RAM requires the desktop app.");
+      return;
+    }
+    setSuggestionLoading(true);
+    setSuggestionError(null);
+    try {
+      const result = await getMemorySuggestion();
+      setSuggestion(result);
+      updateJava({
+        defaultMemoryMinMb: result.suggestedMinMb,
+        defaultMemoryMaxMb: result.suggestedMaxMb,
+      });
+    } catch (err) {
+      setSuggestionError(errorMessage(err));
+    } finally {
+      setSuggestionLoading(false);
+    }
+  }
 
   return (
     <div className={styles.section}>
@@ -15,10 +73,33 @@ export function JavaSection() {
         <div className={styles.rowLabel}>
           <strong>Detected runtimes</strong>
         </div>
-        <div className={styles.emptyState}>
-          No Java runtimes detected yet. Automatic detection (registry + PATH + JAVA_HOME on
-          Windows) is implemented in Phase 3 by JavaManager.
-        </div>
+        {!isTauri ? (
+          <div className={styles.emptyState}>
+            Detecting installed Java runtimes requires the desktop app.
+          </div>
+        ) : runtimesLoading ? (
+          <div className={styles.emptyState}>Detecting…</div>
+        ) : runtimesError ? (
+          <div className={styles.emptyState}>{runtimesError}</div>
+        ) : runtimes && runtimes.length > 0 ? (
+          <ul className={styles.runtimeList}>
+            {runtimes.map((runtime) => (
+              <li key={runtime.javaPath} className={styles.runtimeItem}>
+                <span>
+                  Java {runtime.majorVersion} ({runtime.versionString})
+                  {runtime.vendor ? ` — ${runtime.vendor}` : ""}
+                  {runtime.is64Bit ? "" : " · 32-bit"}
+                </span>
+                <span className={styles.runtimePath}>{runtime.javaPath}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className={styles.emptyState}>
+            No Java runtimes detected on this machine (checked PATH, JAVA_HOME, and known install
+            locations).
+          </div>
+        )}
       </div>
 
       <div className={styles.checkboxRow}>
@@ -26,7 +107,7 @@ export function JavaSection() {
           checked={java.autoSelect}
           onChange={(value) => updateJava({ autoSelect: value })}
           label="Automatically select a compatible Java runtime"
-          description="Picks the right Java major version for each Minecraft version once JavaManager exists."
+          description="Picks the closest detected runtime matching each version's required Java major version."
         />
       </div>
 
@@ -82,6 +163,24 @@ export function JavaSection() {
             <span>MB</span>
           </div>
         </div>
+      </div>
+
+      <div>
+        <button
+          type="button"
+          className={styles.suggestButton}
+          onClick={() => void handleSuggestMemory()}
+          disabled={suggestionLoading}
+        >
+          {suggestionLoading ? "Checking system RAM…" : "Suggest from system RAM"}
+        </button>
+        {suggestion ? (
+          <p className={styles.hint}>
+            This machine has {(suggestion.totalSystemMb / 1024).toFixed(1)} GB total RAM - suggested{" "}
+            {suggestion.suggestedMinMb}&ndash;{suggestion.suggestedMaxMb} MB.
+          </p>
+        ) : null}
+        {suggestionError ? <p className={styles.hint}>{suggestionError}</p> : null}
       </div>
     </div>
   );

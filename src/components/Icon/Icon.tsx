@@ -16,6 +16,7 @@ export type IconName =
   | "folder"
   | "close"
   | "pencil"
+  | "download"
   | "microsoft";
 
 interface IconProps {
@@ -143,6 +144,17 @@ function renderPaths(name: IconName) {
           strokeWidth="1.6"
           strokeLinejoin="round"
           strokeLinecap="round"
+        />
+      );
+    case "download":
+      return (
+        <path
+          d="M12 3 L12 14 M7 9.5 L12 14.5 L17 9.5 M4 18 L4 20 A1 1 0 0 0 5 21 L19 21 A1 1 0 0 0 20 20 L20 18"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
       );
     case "microsoft":

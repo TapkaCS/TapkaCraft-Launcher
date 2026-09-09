@@ -90,39 +90,34 @@ impl AppPaths {
         self.roaming.join("instances")
     }
 
-    // The methods below await their Phase 3 callers (VersionService,
-    // JavaManager, DownloadManager). `runtimes_dir` is already exercised by
-    // this file's own tests, so only the rest need a targeted dead_code
-    // allow instead of a blanket one for the whole impl block.
     /// Shared, deduplicated across instances.
-    #[allow(dead_code)]
     pub fn assets_dir(&self) -> PathBuf {
         self.local.join("assets")
     }
 
     /// Shared, deduplicated across instances.
-    #[allow(dead_code)]
     pub fn libraries_dir(&self) -> PathBuf {
         self.local.join("libraries")
     }
 
     /// Shared, deduplicated across instances.
-    #[allow(dead_code)]
     pub fn versions_dir(&self) -> PathBuf {
         self.local.join("versions")
     }
 
     /// TapkaCraft-managed Java runtimes (e.g. `runtimes/java21/`). Never the
     /// user's system Java installation.
-    #[allow(dead_code)]
     pub fn runtimes_dir(&self) -> PathBuf {
         self.local.join("runtimes")
     }
 
-    #[allow(dead_code)]
+    /// Where `VersionService` caches Mojang's version manifest between runs.
     pub fn cache_dir(&self) -> PathBuf {
         self.local.join("cache")
     }
+
+    // `temp_downloads_dir`/`logs_dir` await their callers still (a
+    // resumable-download staging area, and the logging pipeline).
 
     #[allow(dead_code)]
     pub fn temp_downloads_dir(&self) -> PathBuf {

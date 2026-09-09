@@ -13,7 +13,7 @@ export function DownloadsSection() {
       <div className={styles.row}>
         <div className={styles.rowLabel}>
           <strong>Concurrent downloads</strong>
-          <span>How many files DownloadManager fetches in parallel once it exists (Phase 3).</span>
+          <span>How many files the Install button fetches in parallel.</span>
         </div>
         <div className={styles.rowControl}>
           <input

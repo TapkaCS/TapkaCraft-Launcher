@@ -4,6 +4,9 @@
 //! through commands declared here.
 
 pub mod instances;
+pub mod java;
+pub mod system;
+pub mod versions;
 
 /// Real, working command: proves the frontend <-> Rust IPC bridge functions
 /// end to end. Surfaced in the UI as the small version string shown on the

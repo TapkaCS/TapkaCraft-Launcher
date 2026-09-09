@@ -153,6 +153,12 @@ pub fn create(
     Ok(meta)
 }
 
+/// Reads a single instance's metadata by id.
+pub fn get(instances_dir: &Path, id: &str) -> Result<InstanceMeta, InstanceError> {
+    let dir = resolve_instance_dir(instances_dir, id)?;
+    read_meta(&dir)
+}
+
 /// Applies a partial edit (only `Some` fields change) and persists it.
 pub fn update(
     instances_dir: &Path,
@@ -380,6 +386,21 @@ mod tests {
             .map(|m| m.name)
             .collect();
         assert_eq!(names, vec!["Healthy".to_string()]);
+    }
+
+    #[test]
+    fn get_reads_back_a_created_instance() {
+        let root = tempfile::tempdir().unwrap();
+        let created = create(root.path(), sample_input("Lookup")).unwrap();
+        let fetched = get(root.path(), &created.id).unwrap();
+        assert_eq!(fetched, created);
+    }
+
+    #[test]
+    fn get_on_an_unknown_id_reports_not_found() {
+        let root = tempfile::tempdir().unwrap();
+        let err = get(root.path(), "missing").unwrap_err();
+        assert!(matches!(err, InstanceError::NotFound(_)));
     }
 
     #[test]

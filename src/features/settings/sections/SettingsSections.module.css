@@ -120,3 +120,50 @@
   align-items: center;
   gap: 8px;
 }
+
+.runtimeList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.runtimeItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--tc-panel-bg);
+  border: 1px solid var(--tc-panel-border-light);
+  border-radius: var(--tc-radius);
+  font-size: 0.85em;
+}
+
+.runtimePath {
+  font-size: 0.85em;
+  color: var(--tc-text-muted);
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.suggestButton {
+  background: var(--tc-panel-bg);
+  border: 1px solid var(--tc-panel-border-light);
+  color: var(--tc-text-primary);
+  border-radius: var(--tc-radius);
+  padding: 7px 12px;
+  font-size: 0.85em;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.suggestButton:hover:not(:disabled) {
+  border-color: var(--tc-green-highlight);
+  color: var(--tc-green-highlight);
+}
+
+.suggestButton:disabled {
+  opacity: 0.6;
+}
