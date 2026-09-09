@@ -9,6 +9,7 @@ import { useUiStore } from "@/state/uiStore";
 
 import { ComingSoonPanel } from "./ComingSoonPanel";
 import styles from "./DashboardScreen.module.css";
+import { ModrinthTab } from "./ModrinthTab";
 import { PlayTab } from "./PlayTab";
 import { ProfilesTab } from "./ProfilesTab";
 
@@ -42,18 +43,12 @@ export function DashboardScreen() {
       <main className={styles.content}>
         {activeTab === "play" ? <PlayTab /> : null}
         {activeTab === "profiles" ? <ProfilesTab /> : null}
-        {activeTab === "modrinth" ? (
-          <ComingSoonPanel
-            icon="compass"
-            title="Modrinth"
-            description="Search, browse and install mods, resource packs and shaders from Modrinth. This tab lands in Phase 6, once ModrinthService talks to the real API."
-          />
-        ) : null}
+        {activeTab === "modrinth" ? <ModrinthTab /> : null}
         {activeTab === "modpacks" ? (
           <ComingSoonPanel
             icon="box"
             title="Modpacks"
-            description="Import and install .mrpack modpacks into their own isolated instance. This tab lands in Phase 7."
+            description="Import and install .mrpack modpacks into their own isolated instance. This tab lands in a later phase."
           />
         ) : null}
         {activeTab === "settings" ? <SettingsScreen /> : null}

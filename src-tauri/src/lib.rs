@@ -48,6 +48,10 @@ pub fn run() {
             commands::accounts::sign_out,
             commands::accounts::remove_account,
             commands::launch::launch_instance,
+            commands::modrinth::search_mods,
+            commands::modrinth::list_mod_versions,
+            commands::modrinth::list_installed_mods,
+            commands::modrinth::install_mod,
         ])
         .run(tauri::generate_context!())
         .expect("error while running TapkaCraft Launcher");

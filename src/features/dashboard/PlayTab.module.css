@@ -188,19 +188,6 @@
   color: var(--tc-text-muted);
 }
 
-.installProgressTrack {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--tc-panel-bg-strong);
-  overflow: hidden;
-}
-
-.installProgressFill {
-  height: 100%;
-  background: var(--tc-green-highlight);
-  transition: width 150ms ease-out;
-}
-
 .playBar {
   display: flex;
   align-items: center;

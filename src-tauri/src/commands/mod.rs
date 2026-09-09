@@ -7,6 +7,7 @@ pub mod accounts;
 pub mod instances;
 pub mod java;
 pub mod launch;
+pub mod modrinth;
 pub mod system;
 pub mod versions;
 

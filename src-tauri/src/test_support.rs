@@ -27,7 +27,11 @@ pub async fn bind_mock_server() -> (TcpListener, SocketAddr) {
 
 /// Starts serving `files` (request path -> response body) over an
 /// already-bound `listener`, responding 200 for a known path and 404
-/// otherwise. Runs until the listener is dropped.
+/// otherwise. The lookup key is the request target with any `?query`
+/// stripped - tests exercising a real query string (Modrinth's search,
+/// say) register just the path and don't need to reproduce this crate's
+/// exact query-parameter serialization to match. Runs until the listener
+/// is dropped.
 pub fn serve_mock_files(listener: TcpListener, files: HashMap<String, Vec<u8>>) {
     let files = Arc::new(files);
     tokio::spawn(async move {
@@ -42,7 +46,8 @@ pub fn serve_mock_files(listener: TcpListener, files: HashMap<String, Vec<u8>>) 
                     return;
                 };
                 let request = String::from_utf8_lossy(&buf[..n]);
-                let path = request.split_whitespace().nth(1).unwrap_or("/").to_string();
+                let target = request.split_whitespace().nth(1).unwrap_or("/");
+                let path = target.split('?').next().unwrap_or(target).to_string();
                 match files.get(&path) {
                     Some(content) => {
                         let header = format!(
@@ -106,7 +111,8 @@ pub async fn spawn_mock_server_with_status(files: HashMap<String, MockResponse>)
                     return;
                 };
                 let request = String::from_utf8_lossy(&buf[..n]);
-                let path = request.split_whitespace().nth(1).unwrap_or("/").to_string();
+                let target = request.split_whitespace().nth(1).unwrap_or("/");
+                let path = target.split('?').next().unwrap_or(target).to_string();
                 match files.get(&path) {
                     Some(response) => {
                         let header = format!(

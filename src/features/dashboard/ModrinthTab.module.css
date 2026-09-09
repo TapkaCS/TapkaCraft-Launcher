@@ -1,0 +1,143 @@
+.wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
+
+.state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+  text-align: center;
+  color: var(--tc-text-muted);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.1em;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 0.85em;
+  color: var(--tc-text-muted);
+}
+
+.searchForm {
+  display: flex;
+  gap: 8px;
+}
+
+.searchInput {
+  min-width: 240px;
+  padding: 8px 12px;
+  background: var(--tc-panel-bg);
+  border: 1px solid var(--tc-panel-border-light);
+  border-radius: var(--tc-radius);
+  color: var(--tc-text-primary);
+  font-family: inherit;
+  font-size: 0.9em;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--tc-green-highlight);
+}
+
+.notice {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--tc-panel-bg);
+  border: 1px solid var(--tc-panel-border-light);
+  border-radius: var(--tc-radius);
+  color: var(--tc-text-muted);
+  font-size: 0.82em;
+}
+
+.errorText {
+  color: var(--tc-danger);
+}
+
+.results {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--tc-card-bg);
+  border: 1px solid var(--tc-card-border);
+  border-radius: var(--tc-radius);
+}
+
+.card:hover {
+  border-color: var(--tc-card-hover-border);
+}
+
+.icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.iconFallback {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  display: grid;
+  place-content: center;
+  background: var(--tc-green-500);
+  color: #fff;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1em;
+}
+
+.description {
+  margin: 2px 0 0;
+  font-size: 0.82em;
+  color: var(--tc-text-secondary);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.stats {
+  margin: 4px 0 0;
+  font-size: 0.78em;
+  color: var(--tc-text-muted);
+}

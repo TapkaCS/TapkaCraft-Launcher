@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { Icon } from "@/components/Icon/Icon";
+import { InstallProgressBar } from "@/components/InstallProgressBar/InstallProgressBar";
 import { ModCard } from "@/components/ModCard/ModCard";
 import { ProfileListItem } from "@/components/ProfileListItem/ProfileListItem";
 import { RetroButton } from "@/components/RetroButton/RetroButton";
@@ -8,7 +9,7 @@ import { RetroPanel } from "@/components/RetroPanel/RetroPanel";
 import { RetroSelect } from "@/components/RetroSelect/RetroSelect";
 import { MOCK_FEATURED_MODS, MOCK_NEWS_SLIDES } from "@/lib/mock/mockData";
 import { useAuthStore } from "@/state/authStore";
-import { useInstallStore, type InstallProgress } from "@/state/installStore";
+import { useInstallStore } from "@/state/installStore";
 import { useInstanceStore } from "@/state/instanceStore";
 import { useLaunchStore } from "@/state/launchStore";
 import { useUiStore } from "@/state/uiStore";
@@ -113,30 +114,6 @@ export function PlayTab() {
         </div>
 
         <PlayBar />
-      </div>
-    </div>
-  );
-}
-
-function InstallProgressBar({ progress, label }: { progress: InstallProgress; label: string }) {
-  return (
-    <div className={styles.installProgress}>
-      <span className={styles.installProgressLabel}>
-        {progress.totalFiles > 0
-          ? `${label} ${progress.completedFiles}/${progress.totalFiles} files`
-          : `${label}…`}
-        {progress.currentLabel ? ` — ${progress.currentLabel}` : ""}
-      </span>
-      <div className={styles.installProgressTrack}>
-        <div
-          className={styles.installProgressFill}
-          style={{
-            width:
-              progress.totalFiles > 0
-                ? `${Math.min(100, (progress.completedFiles / progress.totalFiles) * 100)}%`
-                : "6%",
-          }}
-        />
       </div>
     </div>
   );
