@@ -1,3 +1,7 @@
 [target.x86_64-pc-windows-gnu]
 linker = "x86_64-w64-mingw32-gcc"
 ar = "x86_64-w64-mingw32-ar"
+# GNU ld's PE/COFF export table hits "export ordinal too large" once a
+# binary pulls in as much of the Windows API surface as Tauri/wry/
+# webview2-com/windows-rs do combined. LLD doesn't have that limitation.
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]
