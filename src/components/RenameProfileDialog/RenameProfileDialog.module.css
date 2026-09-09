@@ -5,30 +5,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
+  z-index: 60;
 }
 
 .dialog {
-  width: min(440px, 92vw);
+  width: min(400px, 92vw);
 }
 
 .form {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.fieldLabel {
-  font-size: 0.85em;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--tc-dialog-text-muted);
 }
 
 .input {
@@ -55,16 +42,8 @@
   font-size: 0.82em;
 }
 
-.note {
-  margin: 0;
-  font-size: 0.78em;
-  line-height: 1.4;
-  color: var(--tc-dialog-text-muted);
-}
-
 .actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 4px;
 }

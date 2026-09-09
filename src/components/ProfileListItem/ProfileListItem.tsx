@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { Icon } from "@/components/Icon/Icon";
 import { LOADER_LABELS, type InstanceMeta, type LoaderKind } from "@/types/instance";
@@ -10,6 +10,8 @@ interface ProfileListItemProps {
   selected: boolean;
   onSelect: () => void;
   onToggleFavorite: () => void;
+  /** Extra buttons (rename/delete/...) rendered after the favorite toggle. Omitted by the compact Play-tab sidebar. */
+  extraActions?: ReactNode;
 }
 
 const LOADER_ACCENTS: Record<LoaderKind, string> = {
@@ -25,6 +27,7 @@ export function ProfileListItem({
   selected,
   onSelect,
   onToggleFavorite,
+  extraActions,
 }: ProfileListItemProps) {
   const accentStyle = { "--accent": LOADER_ACCENTS[instance.loader.type] } as CSSProperties;
   const subtitle =
@@ -56,6 +59,7 @@ export function ProfileListItem({
       >
         <Icon name={instance.favorite ? "star" : "starOutline"} size={16} />
       </button>
+      {extraActions}
     </div>
   );
 }

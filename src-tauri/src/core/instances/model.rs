@@ -4,11 +4,6 @@
 //! `src/types/instance.ts`) mirrors this struct - both sides describe the
 //! same document.
 
-// Not constructed by any command yet - `InstanceService` (Phase 2) is the
-// real caller. Only this file's tests exercise it so far, which trips
-// `dead_code` under a plain `cargo build`. Remove once Phase 2 lands.
-#![allow(dead_code)]
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -58,6 +53,32 @@ pub enum LoaderKind {
 pub struct JavaSettings {
     pub memory_min_mb: u32,
     pub memory_max_mb: u32,
+}
+
+/// What the "New Profile" dialog submits. `InstanceService::create` fills
+/// in every other `InstanceMeta` field with sane defaults.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NewInstanceInput {
+    pub name: String,
+    pub minecraft_version: String,
+    pub loader: LoaderConfig,
+}
+
+/// A partial edit: only fields set to `Some` are changed. Deliberately
+/// limited to metadata that has no filesystem/installation consequences -
+/// changing `minecraftVersion`/`loader` on an existing instance is Smart
+/// Upgrade / Upgrade Instance territory (Phase 8), once there is a real
+/// installer to migrate the instance's files.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InstanceUpdate {
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub favorite: Option<bool>,
+    #[serde(default)]
+    pub java: Option<JavaSettings>,
 }
 
 #[cfg(test)]

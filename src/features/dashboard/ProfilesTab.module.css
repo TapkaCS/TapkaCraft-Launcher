@@ -30,3 +30,45 @@
   gap: 10px;
   align-content: start;
 }
+
+.iconButton {
+  flex: none;
+  width: 36px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--tc-card-border);
+  color: var(--tc-text-muted);
+  display: grid;
+  place-content: center;
+}
+
+.iconButton:hover {
+  color: var(--tc-text-primary);
+}
+
+.iconButtonDanger:hover {
+  color: var(--tc-danger);
+}
+
+.state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+  text-align: center;
+  color: var(--tc-text-muted);
+}
+
+.stateError {
+  color: var(--tc-danger);
+}
+
+.deleteError {
+  display: block;
+  margin-top: 12px;
+  color: var(--tc-danger);
+  font-size: 0.85em;
+}

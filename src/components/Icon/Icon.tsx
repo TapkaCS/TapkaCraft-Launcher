@@ -15,6 +15,7 @@ export type IconName =
   | "chevronDown"
   | "folder"
   | "close"
+  | "pencil"
   | "microsoft";
 
 interface IconProps {
@@ -130,6 +131,17 @@ function renderPaths(name: IconName) {
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
+          strokeLinecap="round"
+        />
+      );
+    case "pencil":
+      return (
+        <path
+          d="M4 20 L4 16.5 L15.5 5 A2.1 2.1 0 0 1 18.5 5 L19 5.5 A2.1 2.1 0 0 1 19 8.5 L7.5 20 Z M13.5 7 L17 10.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
           strokeLinecap="round"
         />
       );

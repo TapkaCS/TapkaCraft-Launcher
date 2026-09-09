@@ -3,6 +3,8 @@
 //! frontend must never re-implement launcher logic itself; it only calls
 //! through commands declared here.
 
+pub mod instances;
+
 /// Real, working command: proves the frontend <-> Rust IPC bridge functions
 /// end to end. Surfaced in the UI as the small version string shown on the
 /// login and dashboard screens.

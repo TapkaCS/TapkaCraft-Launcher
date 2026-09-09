@@ -3,6 +3,7 @@ import { useState, type FormEvent, type MouseEvent } from "react";
 import { LauncherDialog } from "@/components/LauncherDialog/LauncherDialog";
 import { RetroButton } from "@/components/RetroButton/RetroButton";
 import { RetroSelect } from "@/components/RetroSelect/RetroSelect";
+import { isTauri } from "@/lib/tauri";
 import { useInstanceStore } from "@/state/instanceStore";
 import type { LoaderKind } from "@/types/instance";
 
@@ -27,25 +28,34 @@ export function NewProfileDialog({ onClose }: NewProfileDialogProps) {
   const [name, setName] = useState("");
   const [minecraftVersion, setMinecraftVersion] = useState(MINECRAFT_VERSIONS[0]);
   const [loader, setLoader] = useState<LoaderKind>("vanilla");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const trimmedName = name.trim();
-  const canSubmit = trimmedName.length > 0;
+  const canSubmit = trimmedName.length > 0 && !isSubmitting;
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (!canSubmit) return;
-    createInstance({ name: trimmedName, minecraftVersion, loader });
-    onClose();
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await createInstance({ name: trimmedName, minecraftVersion, loader });
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setIsSubmitting(false);
+    }
   }
 
   function handleOverlayClick(event: MouseEvent<HTMLDivElement>) {
-    if (event.target === event.currentTarget) onClose();
+    if (!isSubmitting && event.target === event.currentTarget) onClose();
   }
 
   return (
     <div className={styles.overlay} role="presentation" onMouseDown={handleOverlayClick}>
       <LauncherDialog heading="New Profile" className={styles.dialog}>
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={(event) => void handleSubmit(event)}>
           <label className={styles.field}>
             <span className={styles.fieldLabel}>Profile name</span>
             <input
@@ -54,6 +64,7 @@ export function NewProfileDialog({ onClose }: NewProfileDialogProps) {
               onChange={(event) => setName(event.target.value)}
               placeholder="e.g. Performance"
               autoFocus
+              disabled={isSubmitting}
             />
           </label>
 
@@ -61,6 +72,7 @@ export function NewProfileDialog({ onClose }: NewProfileDialogProps) {
             label="Minecraft version"
             value={minecraftVersion}
             onChange={(event) => setMinecraftVersion(event.target.value)}
+            disabled={isSubmitting}
           >
             {MINECRAFT_VERSIONS.map((version) => (
               <option key={version} value={version}>
@@ -73,6 +85,7 @@ export function NewProfileDialog({ onClose }: NewProfileDialogProps) {
             label="Loader"
             value={loader}
             onChange={(event) => setLoader(event.target.value as LoaderKind)}
+            disabled={isSubmitting}
           >
             {LOADERS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -81,17 +94,25 @@ export function NewProfileDialog({ onClose }: NewProfileDialogProps) {
             ))}
           </RetroSelect>
 
+          {error ? <p className={styles.error}>{error}</p> : null}
+
           <p className={styles.note}>
-            Profiles created here are kept for this session only - real instance folders and
-            downloads arrive in a later update.
+            {isTauri
+              ? "Creates the instance folder now (mods/saves/resourcepacks/shaderpacks/screenshots). Installing Minecraft itself arrives in Phase 3."
+              : "Browser preview: this profile is kept in memory only for this session, not written to disk."}
           </p>
 
           <div className={styles.actions}>
-            <RetroButton type="button" variant="secondary" onClick={onClose}>
+            <RetroButton
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
               Cancel
             </RetroButton>
             <RetroButton type="submit" variant="primary" disabled={!canSubmit}>
-              Create
+              {isSubmitting ? "Creating…" : "Create"}
             </RetroButton>
           </div>
         </form>

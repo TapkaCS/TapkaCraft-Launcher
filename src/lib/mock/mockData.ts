@@ -1,12 +1,10 @@
 /**
- * Phase 1 UI mock data.
- *
- * Nothing in this file is backed by a Tauri command, the filesystem, or any
- * network call - it exists purely so the login and dashboard screens have
- * realistic content while `AccountService`, `InstanceService` and
- * `ModrinthService` are built out in later phases. `authStore.mockSignIn`
- * is the only place `MOCK_ACCOUNT` is used; everything reachable from it is
- * clearly named and imported only from this module.
+ * Mock data used only when there is no Tauri backend to talk to (a plain
+ * `vite dev`/`vite preview` browser session, not the actual app) - see
+ * `isTauri` in `src/lib/tauri.ts`. `authStore.mockSignIn` always uses
+ * `MOCK_ACCOUNT` (real Microsoft auth is Phase 4). `MOCK_INSTANCES` is only
+ * `instanceStore.loadInstances`'s dev-mode fallback as of Phase 2 - inside
+ * the real app, instances come from `InstanceService` on disk.
  */
 
 import type { MinecraftAccount } from "@/types/account";

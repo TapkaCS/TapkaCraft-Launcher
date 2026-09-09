@@ -1,0 +1,26 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 8, 6, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+
+.dialog {
+  width: min(400px, 92vw);
+}
+
+.message {
+  margin: 0 0 20px;
+  font-size: 0.95em;
+  line-height: 1.45;
+  color: var(--tc-dialog-text);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

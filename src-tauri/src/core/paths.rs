@@ -16,15 +16,10 @@
 //! directory next to the executable instead, and neither AppData location
 //! is touched.
 //!
-//! None of this is wired into a Tauri command yet - Phase 1 has no caller
-//! for it - but it is real, working, unit-tested path-resolution logic that
-//! `core::instances`, `core::java` and `core::downloads` will build on.
-
-// Not wired into a Tauri command yet (see the module doc comment above) - the
-// only caller so far is this file's own test module, which trips `dead_code`
-// under a plain `cargo build`. Remove this once `core::instances`/`core::java`
-// start calling into `AppPaths`.
-#![allow(dead_code)]
+//! Resolved once at startup (see `lib::run`) and managed as Tauri state, so
+//! every command handler reaches it via `tauri::State<AppPaths>` instead of
+//! re-deriving it. `core::instances` is the first real caller;
+//! `core::java` and `core::downloads` will follow the same pattern.
 
 use std::path::{Path, PathBuf};
 
@@ -76,11 +71,15 @@ impl AppPaths {
         }
     }
 
+    // Awaits a caller: a "Data stored in..." row in Settings > Advanced, or
+    // similar, is the natural place to surface these.
+    #[allow(dead_code)]
     pub fn is_portable(&self) -> bool {
         self.portable
     }
 
     /// Lightweight settings, account metadata, launcher preferences.
+    #[allow(dead_code)]
     pub fn settings_dir(&self) -> PathBuf {
         self.roaming.clone()
     }
@@ -91,35 +90,46 @@ impl AppPaths {
         self.roaming.join("instances")
     }
 
+    // The methods below await their Phase 3 callers (VersionService,
+    // JavaManager, DownloadManager). `runtimes_dir` is already exercised by
+    // this file's own tests, so only the rest need a targeted dead_code
+    // allow instead of a blanket one for the whole impl block.
     /// Shared, deduplicated across instances.
+    #[allow(dead_code)]
     pub fn assets_dir(&self) -> PathBuf {
         self.local.join("assets")
     }
 
     /// Shared, deduplicated across instances.
+    #[allow(dead_code)]
     pub fn libraries_dir(&self) -> PathBuf {
         self.local.join("libraries")
     }
 
     /// Shared, deduplicated across instances.
+    #[allow(dead_code)]
     pub fn versions_dir(&self) -> PathBuf {
         self.local.join("versions")
     }
 
     /// TapkaCraft-managed Java runtimes (e.g. `runtimes/java21/`). Never the
     /// user's system Java installation.
+    #[allow(dead_code)]
     pub fn runtimes_dir(&self) -> PathBuf {
         self.local.join("runtimes")
     }
 
+    #[allow(dead_code)]
     pub fn cache_dir(&self) -> PathBuf {
         self.local.join("cache")
     }
 
+    #[allow(dead_code)]
     pub fn temp_downloads_dir(&self) -> PathBuf {
         self.local.join("temp")
     }
 
+    #[allow(dead_code)]
     pub fn logs_dir(&self) -> PathBuf {
         self.roaming.join("logs")
     }

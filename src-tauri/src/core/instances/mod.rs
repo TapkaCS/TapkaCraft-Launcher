@@ -1,13 +1,11 @@
-//! `InstanceService` (Phase 2).
-//!
-//! Owns instance lifecycle - create/list/update/delete, each instance
-//! isolated under its own directory (config, mods, saves, resourcepacks,
-//! shaderpacks, screenshots, `options.txt`) while assets/libraries/runtimes/
-//! versions stay shared - and reading/writing each instance's
-//! `instance.json`. Not implemented yet: only the metadata contract
-//! (`model`) exists so far, matching the schema the master spec defines
-//! under "INSTANCE METADATA". The frontend's Phase 1 profile list uses this
-//! same shape for its mock data so switching it over to real instances
-//! later is a data-source change, not a UI rewrite.
+//! `InstanceService`: instance lifecycle (create/list/update/delete), each
+//! instance isolated under its own directory (`instance.json`, `mods/`,
+//! `saves/`, `resourcepacks/`, `shaderpacks/`, `screenshots/` - `config/`
+//! and `options.txt` are written by the game itself once launching exists,
+//! not pre-created here) while assets/libraries/runtimes/versions stay
+//! shared under `AppPaths` - matching the "INSTANCE SYSTEM" section of the
+//! project plan. `crate::commands::instances` is the thin Tauri IPC layer
+//! on top of this; the frontend never touches the filesystem directly.
 
 pub mod model;
+pub mod service;
