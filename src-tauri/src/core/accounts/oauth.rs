@@ -22,10 +22,11 @@ use tokio::net::TcpListener;
 
 use super::AccountError;
 
-/// Not a real client id - see the module doc on `core::accounts`. Every
-/// third-party Minecraft launcher needs its own Azure AD (Entra ID) app
-/// registration; this project doesn't ship with one baked in.
-pub const MICROSOFT_CLIENT_ID: &str = "";
+/// TapkaCraft Launcher's own Azure AD (Entra ID) app registration - a
+/// public/native client, so this id is not a secret (it's inherently
+/// visible in the authorization request itself, same as every other
+/// third-party Minecraft launcher's).
+pub const MICROSOFT_CLIENT_ID: &str = "7f7e717b-4054-4b78-a1d6-958f7935e7d1";
 
 const AUTHORIZE_URL: &str = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize";
 pub const TOKEN_URL: &str = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";

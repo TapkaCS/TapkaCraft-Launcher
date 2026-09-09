@@ -14,10 +14,9 @@
 //!   Manager; the Linux implementation backs onto the kernel keyutils
 //!   facility (no secret-service daemon required).
 //!
-//! Requires an Azure AD (Entra ID) app registration (client ID) supplied by
-//! the project owner - `MICROSOFT_CLIENT_ID` in `oauth.rs` is a deliberately
-//! empty placeholder until one is configured. Nothing in this module
-//! fabricates a fake/offline session as a substitute.
+//! Uses TapkaCraft Launcher's own Azure AD (Entra ID) app registration -
+//! see `MICROSOFT_CLIENT_ID` in `oauth.rs`. Nothing in this module
+//! fabricates a fake/offline session as a substitute for a real sign-in.
 
 use std::fmt;
 
