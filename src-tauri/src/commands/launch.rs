@@ -17,6 +17,8 @@ use crate::core::instances::service::{self as instance_service, InstanceError};
 use crate::core::java::manifest::RUNTIME_MANIFEST_URL;
 use crate::core::java::{detect, install as java_install, JavaInstallError};
 use crate::core::launch::{self, LaunchEventSink, LaunchParams};
+use crate::core::loaders::fabric;
+use crate::core::loaders::LoaderInstallError;
 use crate::core::paths::AppPaths;
 use crate::core::versions::install::{ensure_installed, InstallPaths};
 use crate::core::versions::manifest::{self, MANIFEST_URL};
@@ -32,6 +34,7 @@ pub enum LaunchCommandError {
     Account(AccountError),
     Launch(launch::LaunchError),
     JavaInstall(JavaInstallError),
+    Loader(LoaderInstallError),
     NotSignedIn,
     UnsupportedLoader { loader: &'static str },
 }
@@ -44,6 +47,7 @@ impl fmt::Display for LaunchCommandError {
             Self::Account(err) => write!(f, "{err}"),
             Self::Launch(err) => write!(f, "{err}"),
             Self::JavaInstall(err) => write!(f, "{err}"),
+            Self::Loader(err) => write!(f, "{err}"),
             Self::NotSignedIn => write!(f, "Sign in with a Microsoft account first."),
             Self::UnsupportedLoader { loader } => write!(
                 f,
@@ -82,6 +86,12 @@ impl From<launch::LaunchError> for LaunchCommandError {
 impl From<JavaInstallError> for LaunchCommandError {
     fn from(err: JavaInstallError) -> Self {
         Self::JavaInstall(err)
+    }
+}
+
+impl From<LoaderInstallError> for LaunchCommandError {
+    fn from(err: LoaderInstallError) -> Self {
+        Self::Loader(err)
     }
 }
 
@@ -147,7 +157,7 @@ pub async fn launch_instance(
     concurrency: usize,
 ) -> Result<i32, LaunchCommandError> {
     let instance = instance_service::get(&app_paths.instances_dir(), &id)?;
-    if instance.loader.kind != LoaderKind::Vanilla {
+    if instance.loader.kind != LoaderKind::Vanilla && instance.loader.kind != LoaderKind::Fabric {
         return Err(LaunchCommandError::UnsupportedLoader {
             loader: loader_label(instance.loader.kind),
         });
@@ -181,6 +191,40 @@ pub async fn launch_instance(
     .await;
     let _ = install_forwarder.await;
     let installed = installed?;
+
+    let loader_override = if instance.loader.kind == LoaderKind::Fabric {
+        let (fabric_tx, mut fabric_rx) = tokio::sync::mpsc::unbounded_channel::<DownloadEvent>();
+        let fabric_forward_app = app.clone();
+        let fabric_forwarder = tokio::spawn(async move {
+            while let Some(event) = fabric_rx.recv().await {
+                let _ = fabric_forward_app.emit(INSTALL_PROGRESS_EVENT, event);
+            }
+        });
+        let profile = fabric::resolve_and_install(
+            &client,
+            fabric::FABRIC_META_URL,
+            &install_paths.libraries_dir,
+            &instance.minecraft_version,
+            &instance.loader.version,
+            concurrency,
+            ProgressSink::new(fabric_tx),
+        )
+        .await;
+        let _ = fabric_forwarder.await;
+        let profile = profile?;
+        Some(launch::LoaderOverride {
+            main_class: profile.main_class,
+            extra_classpath: profile
+                .libraries
+                .iter()
+                .map(|library| install_paths.libraries_dir.join(library.maven_path()))
+                .collect(),
+            extra_jvm_args: profile.arguments.jvm,
+            extra_game_args: profile.arguments.game,
+        })
+    } else {
+        None
+    };
 
     // Versions old enough to predate the `javaVersion` field (pre-1.17)
     // don't name a component - "jre-legacy" (Java 8) is what Mojang's own
@@ -241,6 +285,7 @@ pub async fn launch_instance(
         auth: &session,
         launcher_name: "TapkaCraft Launcher",
         launcher_version: env!("CARGO_PKG_VERSION"),
+        loader_override: loader_override.as_ref(),
     };
 
     let started_at = std::time::Instant::now();

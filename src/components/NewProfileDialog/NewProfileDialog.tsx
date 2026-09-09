@@ -131,10 +131,10 @@ export function NewProfileDialog({ onClose }: NewProfileDialogProps) {
             ))}
           </RetroSelect>
 
-          {loader !== "vanilla" ? (
+          {loader !== "vanilla" && loader !== "fabric" ? (
             <p className={styles.note}>
               Installing {LOADERS.find((option) => option.value === loader)?.label} isn&apos;t
-              supported yet - only Vanilla instances can be installed so far.
+              supported yet - only Vanilla and Fabric instances can be installed so far.
             </p>
           ) : null}
 

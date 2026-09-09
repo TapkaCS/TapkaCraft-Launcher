@@ -10,6 +10,8 @@ use tauri::{AppHandle, Emitter, State};
 use crate::core::downloads::{DownloadEvent, ProgressSink};
 use crate::core::instances::model::LoaderKind;
 use crate::core::instances::service::{self, InstanceError};
+use crate::core::loaders::fabric;
+use crate::core::loaders::LoaderInstallError;
 use crate::core::paths::AppPaths;
 use crate::core::versions::install::{ensure_installed, InstallPaths};
 use crate::core::versions::manifest::{self, MANIFEST_URL};
@@ -28,6 +30,7 @@ pub struct VersionSummary {
 pub enum InstallCommandError {
     Instance(InstanceError),
     Version(VersionError),
+    Loader(LoaderInstallError),
     UnsupportedLoader { loader: &'static str },
 }
 
@@ -36,6 +39,7 @@ impl fmt::Display for InstallCommandError {
         match self {
             Self::Instance(err) => write!(f, "{err}"),
             Self::Version(err) => write!(f, "{err}"),
+            Self::Loader(err) => write!(f, "{err}"),
             Self::UnsupportedLoader { loader } => write!(
                 f,
                 "Installing {loader} instances isn't supported yet - only Vanilla can be installed so far."
@@ -55,6 +59,12 @@ impl From<InstanceError> for InstallCommandError {
 impl From<VersionError> for InstallCommandError {
     fn from(err: VersionError) -> Self {
         Self::Version(err)
+    }
+}
+
+impl From<LoaderInstallError> for InstallCommandError {
+    fn from(err: LoaderInstallError) -> Self {
+        Self::Loader(err)
     }
 }
 
@@ -112,7 +122,7 @@ pub async fn install_instance(
     concurrency: usize,
 ) -> Result<(), InstallCommandError> {
     let instance = service::get(&app_paths.instances_dir(), &id)?;
-    if instance.loader.kind != LoaderKind::Vanilla {
+    if instance.loader.kind != LoaderKind::Vanilla && instance.loader.kind != LoaderKind::Fabric {
         return Err(InstallCommandError::UnsupportedLoader {
             loader: loader_label(instance.loader.kind),
         });
@@ -149,5 +159,53 @@ pub async fn install_instance(
     // own once every already-queued event is flushed - awaiting it here
     // just makes sure that flush finishes before the command returns.
     let _ = forwarder.await;
-    result.map(|_| ()).map_err(InstallCommandError::from)
+    result?;
+
+    if instance.loader.kind == LoaderKind::Fabric {
+        let (fabric_tx, mut fabric_rx) = tokio::sync::mpsc::unbounded_channel::<DownloadEvent>();
+        let fabric_forward_app = app.clone();
+        let fabric_forwarder = tokio::spawn(async move {
+            while let Some(event) = fabric_rx.recv().await {
+                let _ = fabric_forward_app.emit(INSTALL_PROGRESS_EVENT, event);
+            }
+        });
+        let fabric_result = install_fabric(
+            &client,
+            &paths.libraries_dir,
+            &instance.minecraft_version,
+            &instance.loader.version,
+            concurrency,
+            ProgressSink::new(fabric_tx),
+        )
+        .await;
+        let _ = fabric_forwarder.await;
+        fabric_result?;
+    }
+
+    Ok(())
+}
+
+/// Resolves the requested Fabric loader version (`"latest"` or an exact
+/// version) for `game_version` and downloads its extra libraries -
+/// `install_instance`'s own Fabric-specific step, after the Vanilla base is
+/// already in place.
+async fn install_fabric(
+    client: &reqwest::Client,
+    libraries_dir: &std::path::Path,
+    game_version: &str,
+    requested_loader_version: &str,
+    concurrency: usize,
+    events: ProgressSink,
+) -> Result<(), LoaderInstallError> {
+    fabric::resolve_and_install(
+        client,
+        fabric::FABRIC_META_URL,
+        libraries_dir,
+        game_version,
+        requested_loader_version,
+        concurrency,
+        events,
+    )
+    .await
+    .map(|_profile| ())
 }

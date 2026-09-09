@@ -123,6 +123,18 @@ impl LaunchEventSink {
     }
 }
 
+/// A mod loader's (Fabric so far) additions on top of the Vanilla version
+/// it installs alongside: a different entry point, extra classpath jars,
+/// and extra JVM/game arguments. `None` in `LaunchParams` means a plain
+/// Vanilla launch - every field here is additive, never a replacement for
+/// anything Vanilla itself provides other than `main_class`.
+pub struct LoaderOverride {
+    pub main_class: String,
+    pub extra_classpath: Vec<std::path::PathBuf>,
+    pub extra_jvm_args: Vec<String>,
+    pub extra_game_args: Vec<String>,
+}
+
 /// Everything `launch` needs beyond the version's own metadata. Grouped
 /// into a struct (rather than nine positional parameters) purely for
 /// readability at the call site.
@@ -139,6 +151,7 @@ pub struct LaunchParams<'a> {
     pub auth: &'a AuthSession,
     pub launcher_name: &'a str,
     pub launcher_version: &'a str,
+    pub loader_override: Option<&'a LoaderOverride>,
 }
 
 /// Spawns the Minecraft client process and waits for it to exit, streaming
@@ -159,32 +172,7 @@ pub async fn launch(params: LaunchParams<'_>, events: LaunchEventSink) -> Result
     // falls back to its own default window size when `--width`/`--height`
     // are absent from the game arguments.
     let ctx = RuleContext::current(false);
-
-    let classpath = build_classpath(params.installed, params.libraries_dir, &ctx);
-    let substitutions = build_substitutions(&params, &classpath);
-
-    let mut args: Vec<String> = vec![
-        format!("-Xms{}M", params.java_settings.memory_min_mb),
-        format!("-Xmx{}M", params.java_settings.memory_max_mb),
-    ];
-    args.extend(
-        params
-            .installed
-            .version_info
-            .jvm_arguments(&ctx)
-            .iter()
-            .map(|arg| substitute(arg, &substitutions)),
-    );
-    args.push(params.installed.version_info.main_class.clone());
-    args.extend(
-        params
-            .installed
-            .version_info
-            .game_arguments(&ctx)
-            .map_err(LaunchError::Version)?
-            .iter()
-            .map(|arg| substitute(arg, &substitutions)),
-    );
+    let args = build_launch_args(&params, &ctx)?;
 
     let mut child = Command::new(params.runtime.launch_executable())
         .args(&args)
@@ -227,13 +215,79 @@ async fn stream_lines<R: AsyncRead + Unpin>(
     }
 }
 
-/// Every applicable library's jar, in declaration order, followed by the
+/// Builds the full `java` argument list: JVM flags, the version's (or, for
+/// a modded instance, the loader's) main class, and game arguments -
+/// substituted, but not yet handed to a process. Pulled out of `launch`
+/// itself so it's testable without spawning anything.
+fn build_launch_args(
+    params: &LaunchParams<'_>,
+    ctx: &RuleContext,
+) -> Result<Vec<String>, LaunchError> {
+    let classpath = build_classpath(
+        params.installed,
+        params.libraries_dir,
+        ctx,
+        params.loader_override,
+    );
+    let substitutions = build_substitutions(params, &classpath);
+
+    let mut args: Vec<String> = vec![
+        format!("-Xms{}M", params.java_settings.memory_min_mb),
+        format!("-Xmx{}M", params.java_settings.memory_max_mb),
+    ];
+    args.extend(
+        params
+            .installed
+            .version_info
+            .jvm_arguments(ctx)
+            .iter()
+            .map(|arg| substitute(arg, &substitutions)),
+    );
+    if let Some(loader) = params.loader_override {
+        args.extend(
+            loader
+                .extra_jvm_args
+                .iter()
+                .map(|arg| substitute(arg, &substitutions)),
+        );
+    }
+
+    let main_class = params
+        .loader_override
+        .map(|loader| loader.main_class.clone())
+        .unwrap_or_else(|| params.installed.version_info.main_class.clone());
+    args.push(main_class);
+
+    args.extend(
+        params
+            .installed
+            .version_info
+            .game_arguments(ctx)
+            .map_err(LaunchError::Version)?
+            .iter()
+            .map(|arg| substitute(arg, &substitutions)),
+    );
+    if let Some(loader) = params.loader_override {
+        args.extend(
+            loader
+                .extra_game_args
+                .iter()
+                .map(|arg| substitute(arg, &substitutions)),
+        );
+    }
+
+    Ok(args)
+}
+
+/// Every applicable library's jar, in declaration order, then the loader's
+/// own extra libraries (if this is a modded instance), followed by the
 /// client jar itself - joined with the platform's classpath separator
 /// (`;` on Windows, `:` elsewhere).
 fn build_classpath(
     installed: &InstalledVersion,
     libraries_dir: &Path,
     ctx: &RuleContext,
+    loader_override: Option<&LoaderOverride>,
 ) -> String {
     let separator = if cfg!(windows) { ";" } else { ":" };
     let mut entries: Vec<String> = installed
@@ -247,6 +301,14 @@ fn build_classpath(
                 .into_owned()
         })
         .collect();
+    if let Some(loader) = loader_override {
+        entries.extend(
+            loader
+                .extra_classpath
+                .iter()
+                .map(|path| path.to_string_lossy().into_owned()),
+        );
+    }
     entries.push(installed.client_jar.to_string_lossy().into_owned());
     entries.join(separator)
 }
@@ -385,13 +447,75 @@ mod tests {
             natives_dir: PathBuf::from("/libs/1.20.1/natives"),
         };
         let ctx = RuleContext::current(false);
-        let classpath = build_classpath(&installed, Path::new("/libs"), &ctx);
+        let classpath = build_classpath(&installed, Path::new("/libs"), &ctx, None);
 
         let separator = if cfg!(windows) { ";" } else { ":" };
         let expected = format!(
             "/libs/com/mojang/brigadier/1.0.18/brigadier.jar{separator}/libs/1.20.1/1.20.1.jar"
         );
         assert_eq!(classpath, expected);
+    }
+
+    #[test]
+    fn build_launch_args_uses_the_loader_override_s_main_class_and_appends_its_extras() {
+        let installed = InstalledVersion {
+            version_info: version_info_requiring_java(17),
+            client_jar: PathBuf::from("/libs/1.20.1/1.20.1.jar"),
+            natives_dir: PathBuf::from("/libs/1.20.1/natives"),
+        };
+        let runtime = DetectedRuntime {
+            java_path: PathBuf::from("java"),
+            major_version: 17,
+            version_string: "17.0.0".into(),
+            is_64_bit: true,
+            vendor: None,
+        };
+        let java_settings = JavaSettings {
+            memory_min_mb: 256,
+            memory_max_mb: 512,
+        };
+        let auth = fake_auth();
+        let loader_override = LoaderOverride {
+            main_class: "net.fabricmc.loader.impl.launch.knot.KnotClient".into(),
+            extra_classpath: vec![PathBuf::from(
+                "/libs/net/fabricmc/fabric-loader/0.16.9/fabric-loader-0.16.9.jar",
+            )],
+            extra_jvm_args: vec!["-DFabricMcEmu=net.minecraft.client.main.Main ".into()],
+            extra_game_args: vec!["--fabric-extra".into()],
+        };
+        let params = LaunchParams {
+            instance_dir: Path::new("/unused"),
+            java_settings: &java_settings,
+            installed: &installed,
+            libraries_dir: Path::new("/libs"),
+            assets_dir: Path::new("/unused/assets"),
+            runtime: &runtime,
+            auth: &auth,
+            launcher_name: "TapkaCraft Launcher",
+            launcher_version: "0.1.0",
+            loader_override: Some(&loader_override),
+        };
+
+        let ctx = RuleContext::current(false);
+        let args = build_launch_args(&params, &ctx).unwrap();
+
+        // The loader's main class replaces Vanilla's ("Main", per
+        // `version_info_requiring_java`'s fixture) - never both present.
+        assert!(args.contains(&"net.fabricmc.loader.impl.launch.knot.KnotClient".to_string()));
+        assert!(!args.contains(&"Main".to_string()));
+
+        assert!(args
+            .iter()
+            .any(|arg| arg == "-DFabricMcEmu=net.minecraft.client.main.Main "));
+        assert!(args.contains(&"--fabric-extra".to_string()));
+
+        // `-cp ${classpath}` is in `version_info_requiring_java`'s jvm
+        // arguments fixture, substituted before this - real proof the
+        // extra classpath entry actually reached the built `-cp` value,
+        // not just that `extra_classpath` was stored somewhere.
+        let cp_index = args.iter().position(|arg| arg == "-cp").unwrap();
+        assert!(args[cp_index + 1].contains("fabric-loader-0.16.9.jar"));
+        assert!(args[cp_index + 1].contains("1.20.1.jar")); // client jar still present too
     }
 
     #[tokio::test]
@@ -423,6 +547,7 @@ mod tests {
             auth: &auth,
             launcher_name: "TapkaCraft Launcher",
             launcher_version: "0.1.0",
+            loader_override: None,
         };
 
         let result = launch(params, LaunchEventSink::none()).await;
@@ -543,6 +668,7 @@ mod tests {
             auth: &auth,
             launcher_name: "TapkaCraft Launcher",
             launcher_version: "0.1.0-test",
+            loader_override: None,
         };
 
         let exit_code = launch(params, LaunchEventSink::new(tx)).await.unwrap();
