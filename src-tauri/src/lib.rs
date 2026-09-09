@@ -13,7 +13,15 @@ pub fn run() {
         .unwrap_or_else(|| std::path::PathBuf::from("."));
     let args: Vec<String> = std::env::args().collect();
     let app_paths = AppPaths::resolve(&exe_dir, &args);
-    let http_client = reqwest::Client::new();
+    // Explicit User-Agent: reqwest sends none by default, and Mojang's
+    // account/identity endpoints (api.minecraftservices.com in particular)
+    // sit behind bot-protection that has been observed to reject requests
+    // with no identifiable client as 403 Forbidden, even when the request
+    // itself is otherwise well-formed.
+    let http_client = reqwest::Client::builder()
+        .user_agent(concat!("TapkaCraft-Launcher/", env!("CARGO_PKG_VERSION")))
+        .build()
+        .expect("building the shared HTTP client with just a User-Agent set should never fail");
 
     tauri::Builder::default()
         .manage(app_paths)
