@@ -44,7 +44,8 @@ export function AppShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const isAuthenticated = authStatus === "authenticated" || authStatus === "refreshing";
+  const showDashboard =
+    authStatus === "authenticated" || authStatus === "refreshing" || authStatus === "guest";
 
-  return isAuthenticated ? <DashboardScreen /> : <LoginScreen />;
+  return showDashboard ? <DashboardScreen /> : <LoginScreen />;
 }

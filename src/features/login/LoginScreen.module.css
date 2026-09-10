@@ -52,6 +52,13 @@
   text-decoration: none;
 }
 
+.guestHint {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: 0.78em;
+  color: var(--tc-dialog-text-muted);
+}
+
 .version {
   position: absolute;
   right: 18px;

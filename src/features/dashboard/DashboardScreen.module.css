@@ -21,6 +21,21 @@
   gap: 10px;
 }
 
+.guestBadge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: var(--tc-panel-bg-strong);
+  border: 1px solid var(--tc-panel-border-dark);
+  border-radius: var(--tc-radius);
+}
+
+.guestLabel {
+  font-size: 0.85em;
+  color: var(--tc-text-muted);
+}
+
 .tabs {
   padding: 10px 20px 0;
   background: var(--tc-panel-bg-strong);

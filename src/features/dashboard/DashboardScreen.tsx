@@ -1,6 +1,8 @@
 import { AccountMenu } from "@/components/AccountMenu/AccountMenu";
+import { Icon } from "@/components/Icon/Icon";
 import { NewProfileDialog } from "@/components/NewProfileDialog/NewProfileDialog";
 import { PixelLogo } from "@/components/PixelLogo/PixelLogo";
+import { RetroButton } from "@/components/RetroButton/RetroButton";
 import { TopTabs } from "@/components/TopTabs/TopTabs";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { useLauncherVersion } from "@/lib/useLauncherVersion";
@@ -15,24 +17,44 @@ import { ProfilesTab } from "./ProfilesTab";
 
 export function DashboardScreen() {
   const authState = useAuthStore((state) => state.state);
+  const signIn = useAuthStore((state) => state.signIn);
   const activeTab = useUiStore((state) => state.activeTab);
   const setActiveTab = useUiStore((state) => state.setActiveTab);
   const isNewProfileDialogOpen = useUiStore((state) => state.isNewProfileDialogOpen);
   const closeNewProfileDialog = useUiStore((state) => state.closeNewProfileDialog);
   const version = useLauncherVersion();
 
-  // AppShell only mounts this screen while authenticated/refreshing, but the
-  // discriminated union still needs narrowing here for `authState.account`.
-  if (authState.status !== "authenticated" && authState.status !== "refreshing") {
+  // AppShell only mounts this screen while authenticated/refreshing/guest,
+  // but the discriminated union still needs narrowing here for
+  // `authState.account`, which only the first two carry.
+  if (
+    authState.status !== "authenticated" &&
+    authState.status !== "refreshing" &&
+    authState.status !== "guest"
+  ) {
     return null;
   }
+  const account = authState.status === "guest" ? null : authState.account;
 
   return (
     <div className={styles.screen}>
       <header className={styles.header}>
         <PixelLogo size="sm" />
         <div className={styles.headerRight}>
-          <AccountMenu account={authState.account} />
+          {account ? (
+            <AccountMenu account={account} />
+          ) : (
+            <div className={styles.guestBadge}>
+              <span className={styles.guestLabel}>Guest mode</span>
+              <RetroButton
+                variant="microsoft"
+                icon={<Icon name="microsoft" size={14} />}
+                onClick={() => void signIn()}
+              >
+                Sign in
+              </RetroButton>
+            </div>
+          )}
         </div>
       </header>
 

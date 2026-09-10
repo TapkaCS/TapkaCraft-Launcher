@@ -26,7 +26,16 @@ export type AuthMachineState =
   | { status: "authenticating" }
   | { status: "authenticated"; account: MinecraftAccount }
   | { status: "refreshing"; account: MinecraftAccount }
-  | { status: "auth-error"; message: string; previousAccount?: MinecraftAccount };
+  | { status: "auth-error"; message: string; previousAccount?: MinecraftAccount }
+  /**
+   * Chosen from the login screen's "Continue without an account" link.
+   * Unlocks the dashboard for the parts that don't actually need a
+   * Microsoft account on the backend (Profiles, Modrinth, installing
+   * Minecraft files) - Play stays gated on a real `authenticated`/
+   * `refreshing` account, since launching Minecraft itself needs a genuine
+   * token. Never persisted - always starts back at `logged-out`.
+   */
+  | { status: "guest" };
 
 /** Mirrors Rust's `SignInEvent` (`src-tauri/src/core/accounts/service.rs`), emitted as `signin://progress`. */
 export type SignInEvent =

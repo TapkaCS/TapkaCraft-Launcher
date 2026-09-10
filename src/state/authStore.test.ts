@@ -46,4 +46,15 @@ describe("authStore", () => {
     await useAuthStore.getState().restoreSession();
     expect(useAuthStore.getState().state.status).toBe("logged-out");
   });
+
+  it("continueAsGuest switches straight to guest with no account", () => {
+    useAuthStore.getState().continueAsGuest();
+    expect(useAuthStore.getState().state).toEqual({ status: "guest" });
+  });
+
+  it("signOut from guest returns to logged-out without calling the backend", async () => {
+    useAuthStore.getState().continueAsGuest();
+    await useAuthStore.getState().signOut();
+    expect(useAuthStore.getState().state.status).toBe("logged-out");
+  });
 });

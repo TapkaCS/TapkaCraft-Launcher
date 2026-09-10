@@ -15,6 +15,7 @@ export function LoginScreen() {
   const rememberMe = useAuthStore((state) => state.rememberMePreference);
   const setRememberMe = useAuthStore((state) => state.setRememberMePreference);
   const signIn = useAuthStore((state) => state.signIn);
+  const continueAsGuest = useAuthStore((state) => state.continueAsGuest);
   const version = useLauncherVersion();
   const isAuthenticating = authState.status === "authenticating";
   const statusLabel = signInStep ? SIGN_IN_STEP_LABELS[signInStep] : "Signing in…";
@@ -49,6 +50,18 @@ export function LoginScreen() {
             description={"Stay signed in so you don't have to\nlog in every time you play."}
           />
         </div>
+
+        <button
+          type="button"
+          className={styles.helpLink}
+          onClick={() => continueAsGuest()}
+          disabled={isAuthenticating}
+        >
+          Continue without an account
+        </button>
+        <p className={styles.guestHint}>
+          Browse profiles and Modrinth without signing in. Playing still needs a Microsoft account.
+        </p>
 
         <button
           type="button"
