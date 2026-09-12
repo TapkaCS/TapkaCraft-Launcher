@@ -28,13 +28,6 @@ interface AuthStore {
   /** The real loopback Microsoft sign-in flow - opens the system browser. */
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
-  /**
-   * Skips straight to the dashboard without a Microsoft account. Purely a
-   * local state change - no backend call, since there's nothing to
-   * authenticate. `signOut` (which also covers leaving guest mode) returns
-   * here to `logged-out`.
-   */
-  continueAsGuest: () => void;
 }
 
 function errorMessage(err: unknown): string {
@@ -89,7 +82,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   signOut: async () => {
-    if (isTauri && get().state.status !== "guest") {
+    if (isTauri) {
       try {
         await signOutCommand();
       } catch {
@@ -99,6 +92,4 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
     set({ state: { status: "logged-out" }, signInStep: null });
   },
-
-  continueAsGuest: () => set({ state: { status: "guest" }, signInStep: null }),
 }));
