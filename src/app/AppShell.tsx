@@ -1,20 +1,24 @@
 import { useEffect } from "react";
 
+import { UpdateBanner } from "@/components/UpdateBanner/UpdateBanner";
 import { DashboardScreen } from "@/features/dashboard/DashboardScreen";
 import { LoginScreen } from "@/features/login/LoginScreen";
 import { useAuthStore } from "@/state/authStore";
 import { useInstanceStore } from "@/state/instanceStore";
 import { useSettingsStore } from "@/state/settingsStore";
+import { useUpdateStore } from "@/state/updateStore";
 
 /**
  * Root of the UI, switching between the login and dashboard screens purely
  * off `authStore`'s state machine, which real Microsoft authentication
  * (Phase 4) drives via a loopback OAuth flow. Also applies the Appearance
  * settings (theme/compact mode) to the document root, loads instances from
- * disk once at startup, and tries a silent session restore so a
+ * disk once at startup, tries a silent session restore so a
  * previously-remembered account skips straight to the dashboard instead of
- * showing the login screen again - all need to happen above either screen,
- * not per-screen.
+ * showing the login screen again, and checks for an app update - all need
+ * to happen above either screen, not per-screen. The update banner renders
+ * here too (rather than inside each screen) so it's visible no matter which
+ * one is showing.
  */
 export function AppShell() {
   const authStatus = useAuthStore((state) => state.state.status);
@@ -22,6 +26,7 @@ export function AppShell() {
   const theme = useSettingsStore((state) => state.settings.appearance.theme);
   const compactMode = useSettingsStore((state) => state.settings.appearance.compactMode);
   const loadInstances = useInstanceStore((state) => state.loadInstances);
+  const checkForUpdate = useUpdateStore((state) => state.checkForUpdate);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -44,7 +49,16 @@ export function AppShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    void checkForUpdate();
+  }, [checkForUpdate]);
+
   const isAuthenticated = authStatus === "authenticated" || authStatus === "refreshing";
 
-  return isAuthenticated ? <DashboardScreen /> : <LoginScreen />;
+  return (
+    <>
+      <UpdateBanner />
+      {isAuthenticated ? <DashboardScreen /> : <LoginScreen />}
+    </>
+  );
 }

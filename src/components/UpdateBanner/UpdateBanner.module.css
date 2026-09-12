@@ -1,0 +1,18 @@
+.banner {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 16px;
+  background: var(--tc-green-700);
+  color: var(--tc-green-text);
+  font-size: 0.85em;
+  border-bottom: 1px solid var(--tc-panel-border-dark);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
