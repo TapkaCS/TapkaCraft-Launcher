@@ -116,19 +116,22 @@ fn build_url(base_url: &str, segments: &[&str]) -> Result<reqwest::Url, Modrinth
     Ok(url)
 }
 
-/// Searches for mods compatible with `loader` and `game_version`. `query`
-/// may be empty (an empty search still returns Modrinth's default-sorted
-/// results, useful for "just show me something" browsing).
+/// Searches for projects of `project_type` (`"mod"` or `"modpack"` - the
+/// only two this launcher ever installs) compatible with `loader` and
+/// `game_version`. `query` may be empty (an empty search still returns
+/// Modrinth's default-sorted results, useful for "just show me something"
+/// browsing).
 pub async fn search(
     client: &reqwest::Client,
     base_url: &str,
+    project_type: &str,
     query: &str,
     loader: &str,
     game_version: &str,
     limit: u32,
 ) -> Result<SearchResponse, ModrinthError> {
     let facets = serde_json::json!([
-        ["project_type:mod"],
+        [format!("project_type:{project_type}")],
         [format!("categories:{loader}")],
         [format!("versions:{game_version}")],
     ]);
@@ -197,7 +200,7 @@ mod tests {
         let base = spawn_mock_server(files).await;
 
         let client = reqwest::Client::new();
-        let result = search(&client, &base, "sodium", "fabric", "1.20.1", 20)
+        let result = search(&client, &base, "mod", "sodium", "fabric", "1.20.1", 20)
             .await
             .unwrap();
         assert_eq!(result.total_hits, 1);
@@ -211,7 +214,7 @@ mod tests {
         let base = spawn_mock_server(files).await;
 
         let client = reqwest::Client::new();
-        let result = search(&client, &base, "sodium", "fabric", "1.20.1", 20).await;
+        let result = search(&client, &base, "mod", "sodium", "fabric", "1.20.1", 20).await;
         assert!(matches!(result, Err(ModrinthError::Network(_))));
     }
 

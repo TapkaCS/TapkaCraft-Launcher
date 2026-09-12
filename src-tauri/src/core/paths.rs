@@ -116,10 +116,11 @@ impl AppPaths {
         self.local.join("cache")
     }
 
-    // `temp_downloads_dir`/`logs_dir` await their callers still (a
-    // resumable-download staging area, and the logging pipeline).
+    // `logs_dir` awaits its caller still (the logging pipeline).
 
-    #[allow(dead_code)]
+    /// Scratch space for a file that only needs to exist transiently, such
+    /// as a modpack's `.mrpack` downloaded from Modrinth before it's parsed
+    /// and copied into its new instance's own directory.
     pub fn temp_downloads_dir(&self) -> PathBuf {
         self.local.join("temp")
     }

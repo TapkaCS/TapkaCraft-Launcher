@@ -9,8 +9,8 @@ import { useLauncherVersion } from "@/lib/useLauncherVersion";
 import { useAuthStore } from "@/state/authStore";
 import { useUiStore } from "@/state/uiStore";
 
-import { ComingSoonPanel } from "./ComingSoonPanel";
 import styles from "./DashboardScreen.module.css";
+import { ModpacksTab } from "./ModpacksTab";
 import { ModrinthTab } from "./ModrinthTab";
 import { PlayTab } from "./PlayTab";
 import { ProfilesTab } from "./ProfilesTab";
@@ -66,13 +66,7 @@ export function DashboardScreen() {
         {activeTab === "play" ? <PlayTab /> : null}
         {activeTab === "profiles" ? <ProfilesTab /> : null}
         {activeTab === "modrinth" ? <ModrinthTab /> : null}
-        {activeTab === "modpacks" ? (
-          <ComingSoonPanel
-            icon="box"
-            title="Modpacks"
-            description="Import and install .mrpack modpacks into their own isolated instance. This tab lands in a later phase."
-          />
-        ) : null}
+        {activeTab === "modpacks" ? <ModpacksTab /> : null}
         {activeTab === "settings" ? <SettingsScreen /> : null}
       </main>
 

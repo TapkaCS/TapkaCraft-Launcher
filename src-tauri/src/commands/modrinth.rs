@@ -79,6 +79,7 @@ pub async fn search_mods(
     api::search(
         http_client.inner(),
         api::MODRINTH_API_URL,
+        "mod",
         &query,
         &loader,
         &game_version,

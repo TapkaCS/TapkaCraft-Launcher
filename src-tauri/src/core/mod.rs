@@ -4,11 +4,9 @@
 //! to Mojang/Microsoft/Modrinth, or filesystem writes directly - it only
 //! reaches these services through `crate::commands`.
 //!
-//! `paths` and `instances` are real, working, tested services wired up to
-//! Tauri commands as of Phase 2. Every other submodule currently holds
-//! nothing but a doc comment describing what will live there, so later
-//! phases have a stable, pre-agreed home to land in instead of reshuffling
-//! the tree - none of them are referenced by any command yet.
+//! Every submodule here is a real, working, tested service wired up to
+//! Tauri commands - none of this tree is a placeholder for a later phase
+//! anymore.
 
 pub mod paths;
 

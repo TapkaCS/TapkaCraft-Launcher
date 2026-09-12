@@ -28,6 +28,7 @@ pub fn run() {
         .manage(http_client)
         .manage(commands::accounts::ActiveSession::default())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             commands::get_launcher_version,
             commands::instances::list_instances,
@@ -52,6 +53,10 @@ pub fn run() {
             commands::modrinth::list_mod_versions,
             commands::modrinth::list_installed_mods,
             commands::modrinth::install_mod,
+            commands::modpacks::search_modpacks,
+            commands::modpacks::list_modpack_versions,
+            commands::modpacks::import_modpack_file,
+            commands::modpacks::install_modpack_from_modrinth,
         ])
         .run(tauri::generate_context!())
         .expect("error while running TapkaCraft Launcher");
