@@ -26,28 +26,9 @@
 .grid {
   overflow: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
   align-content: start;
-}
-
-.iconButton {
-  flex: none;
-  width: 36px;
-  background: transparent;
-  border: none;
-  border-left: 1px solid var(--tc-card-border);
-  color: var(--tc-text-muted);
-  display: grid;
-  place-content: center;
-}
-
-.iconButton:hover {
-  color: var(--tc-text-primary);
-}
-
-.iconButtonDanger:hover {
-  color: var(--tc-danger);
 }
 
 .state {

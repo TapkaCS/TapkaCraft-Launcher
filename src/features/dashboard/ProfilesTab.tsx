@@ -1,8 +1,7 @@
 import { useState } from "react";
 
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
-import { Icon } from "@/components/Icon/Icon";
-import { ProfileListItem } from "@/components/ProfileListItem/ProfileListItem";
+import { ProfileCard } from "@/components/ProfileCard/ProfileCard";
 import { RenameProfileDialog } from "@/components/RenameProfileDialog/RenameProfileDialog";
 import { RetroButton } from "@/components/RetroButton/RetroButton";
 import { useInstanceStore } from "@/state/instanceStore";
@@ -86,37 +85,17 @@ export function ProfilesTab() {
       ) : (
         <div className={styles.grid}>
           {instances.map((instance) => (
-            <ProfileListItem
+            <ProfileCard
               key={instance.id}
               instance={instance}
               selected={instance.id === selectedId}
               onSelect={() => selectInstance(instance.id)}
               onToggleFavorite={() => void toggleFavorite(instance.id)}
-              extraActions={
-                <>
-                  <button
-                    type="button"
-                    className={styles.iconButton}
-                    aria-label={`Rename ${instance.name}`}
-                    title="Rename"
-                    onClick={() => setRenaming(instance)}
-                  >
-                    <Icon name="pencil" size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    className={[styles.iconButton, styles.iconButtonDanger].join(" ")}
-                    aria-label={`Delete ${instance.name}`}
-                    title="Delete"
-                    onClick={() => {
-                      setDeleteError(null);
-                      setDeleting(instance);
-                    }}
-                  >
-                    <Icon name="close" size={14} />
-                  </button>
-                </>
-              }
+              onRename={() => setRenaming(instance)}
+              onDelete={() => {
+                setDeleteError(null);
+                setDeleting(instance);
+              }}
             />
           ))}
         </div>
