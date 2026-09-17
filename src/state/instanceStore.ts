@@ -9,7 +9,7 @@ import {
 } from "@/lib/api/instances";
 import { MOCK_INSTANCES } from "@/lib/mock/mockData";
 import { isTauri } from "@/lib/tauri";
-import type { InstanceMeta, LoaderKind } from "@/types/instance";
+import type { InstanceMeta, JavaInstanceSettings, LoaderKind } from "@/types/instance";
 
 export interface NewProfileInput {
   name: string;
@@ -37,6 +37,8 @@ interface InstanceStore {
   createInstance: (input: NewProfileInput) => Promise<InstanceMeta>;
   renameInstance: (id: string, name: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
+  /** Per-profile Java memory override - the Profile Editor's own field, distinct from Settings > Java's launcher-wide default. */
+  updateJavaSettings: (id: string, java: JavaInstanceSettings) => Promise<void>;
   deleteInstance: (id: string) => Promise<void>;
   openInstanceFolder: (id: string) => Promise<void>;
 }
@@ -153,6 +155,21 @@ export const useInstanceStore = create<InstanceStore>((set, get) => ({
       return;
     }
     const updated = await updateInstanceCommand(id, { favorite: !current.favorite });
+    set({
+      instances: get().instances.map((instance) => (instance.id === id ? updated : instance)),
+    });
+  },
+
+  updateJavaSettings: async (id, java) => {
+    if (!isTauri) {
+      set({
+        instances: get().instances.map((instance) =>
+          instance.id === id ? { ...instance, java } : instance,
+        ),
+      });
+      return;
+    }
+    const updated = await updateInstanceCommand(id, { java });
     set({
       instances: get().instances.map((instance) => (instance.id === id ? updated : instance)),
     });

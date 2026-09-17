@@ -10,7 +10,7 @@ interface ProfileCardProps {
   selected: boolean;
   onSelect: () => void;
   onToggleFavorite: () => void;
-  onRename: () => void;
+  onEdit: () => void;
   onDelete: () => void;
 }
 
@@ -44,7 +44,7 @@ export function ProfileCard({
   selected,
   onSelect,
   onToggleFavorite,
-  onRename,
+  onEdit,
   onDelete,
 }: ProfileCardProps) {
   const accentStyle = { "--accent": LOADER_ACCENTS[instance.loader.type] } as CSSProperties;
@@ -86,9 +86,9 @@ export function ProfileCard({
         <button
           type="button"
           className={styles.iconButton}
-          aria-label={`Rename ${instance.name}`}
-          title="Rename"
-          onClick={onRename}
+          aria-label={`Edit ${instance.name}`}
+          title="Edit profile"
+          onClick={onEdit}
         >
           <Icon name="pencil" size={14} />
         </button>

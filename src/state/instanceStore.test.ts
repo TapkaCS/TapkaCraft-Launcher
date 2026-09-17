@@ -97,6 +97,24 @@ describe("instanceStore", () => {
     expect(state.instances.find((i) => i.id === targetId)?.favorite).toBe(false);
   });
 
+  it("updates java settings for only the targeted instance", async () => {
+    await useInstanceStore.getState().loadInstances();
+    const targetId = MOCK_INSTANCES[0].id;
+    const otherId = MOCK_INSTANCES[1].id;
+    const otherJavaBefore = MOCK_INSTANCES[1].java;
+
+    await useInstanceStore
+      .getState()
+      .updateJavaSettings(targetId, { memoryMinMb: 2048, memoryMaxMb: 8192 });
+
+    const state = useInstanceStore.getState();
+    expect(state.instances.find((i) => i.id === targetId)?.java).toEqual({
+      memoryMinMb: 2048,
+      memoryMaxMb: 8192,
+    });
+    expect(state.instances.find((i) => i.id === otherId)?.java).toEqual(otherJavaBefore);
+  });
+
   it("deletes an instance and re-picks a selection if it was selected", async () => {
     await useInstanceStore.getState().loadInstances();
     const favorite = MOCK_INSTANCES.find((i) => i.favorite);

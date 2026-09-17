@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { ProfileCard } from "@/components/ProfileCard/ProfileCard";
-import { RenameProfileDialog } from "@/components/RenameProfileDialog/RenameProfileDialog";
+import { ProfileEditorDialog } from "@/components/ProfileEditorDialog/ProfileEditorDialog";
 import { RetroButton } from "@/components/RetroButton/RetroButton";
 import { useInstanceStore } from "@/state/instanceStore";
 import { useUiStore } from "@/state/uiStore";
@@ -21,7 +21,7 @@ export function ProfilesTab() {
   const loadInstances = useInstanceStore((state) => state.loadInstances);
   const openNewProfileDialog = useUiStore((state) => state.openNewProfileDialog);
 
-  const [renaming, setRenaming] = useState<InstanceMeta | null>(null);
+  const [editing, setEditing] = useState<InstanceMeta | null>(null);
   const [deleting, setDeleting] = useState<InstanceMeta | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -91,7 +91,7 @@ export function ProfilesTab() {
               selected={instance.id === selectedId}
               onSelect={() => selectInstance(instance.id)}
               onToggleFavorite={() => void toggleFavorite(instance.id)}
-              onRename={() => setRenaming(instance)}
+              onEdit={() => setEditing(instance)}
               onDelete={() => {
                 setDeleteError(null);
                 setDeleting(instance);
@@ -101,9 +101,7 @@ export function ProfilesTab() {
         </div>
       )}
 
-      {renaming ? (
-        <RenameProfileDialog instance={renaming} onClose={() => setRenaming(null)} />
-      ) : null}
+      {editing ? <ProfileEditorDialog instance={editing} onClose={() => setEditing(null)} /> : null}
 
       {deleting ? (
         <ConfirmDialog
