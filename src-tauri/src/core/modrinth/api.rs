@@ -236,9 +236,18 @@ mod tests {
         let base = spawn_mock_server(files).await;
 
         let client = reqwest::Client::new();
-        let result = search(&client, &base, "mod", "sodium", Some("fabric"), "1.20.1", &[], 20)
-            .await
-            .unwrap();
+        let result = search(
+            &client,
+            &base,
+            "mod",
+            "sodium",
+            Some("fabric"),
+            "1.20.1",
+            &[],
+            20,
+        )
+        .await
+        .unwrap();
         assert_eq!(result.total_hits, 1);
         assert_eq!(result.hits[0].title, "Sodium");
         assert_eq!(result.hits[0].project_id, "AANobbMI");
@@ -250,8 +259,17 @@ mod tests {
         let base = spawn_mock_server(files).await;
 
         let client = reqwest::Client::new();
-        let result =
-            search(&client, &base, "mod", "sodium", Some("fabric"), "1.20.1", &[], 20).await;
+        let result = search(
+            &client,
+            &base,
+            "mod",
+            "sodium",
+            Some("fabric"),
+            "1.20.1",
+            &[],
+            20,
+        )
+        .await;
         assert!(matches!(result, Err(ModrinthError::Network(_))));
     }
 
@@ -311,10 +329,9 @@ mod tests {
         let base = spawn_mock_server(files).await;
 
         let client = reqwest::Client::new();
-        let versions =
-            list_project_versions(&client, &base, "AANobbMI", Some("fabric"), "1.20.1")
-                .await
-                .unwrap();
+        let versions = list_project_versions(&client, &base, "AANobbMI", Some("fabric"), "1.20.1")
+            .await
+            .unwrap();
         assert_eq!(versions.len(), 1);
         let version = &versions[0];
         assert_eq!(version.files[0].hashes.sha1, "abc123");
