@@ -7,9 +7,9 @@ import { useLauncherVersion } from "@/lib/useLauncherVersion";
 import { useAuthStore } from "@/state/authStore";
 import { useUiStore } from "@/state/uiStore";
 
-import { ComingSoonPanel } from "./ComingSoonPanel";
 import styles from "./DashboardScreen.module.css";
 import { DownloadsTab } from "./DownloadsTab";
+import { FriendsTab } from "./FriendsTab";
 import { LanTab } from "./LanTab";
 import { ModpacksTab } from "./ModpacksTab";
 import { ModrinthTab } from "./ModrinthTab";
@@ -44,13 +44,7 @@ export function DashboardScreen() {
 
         <main className={styles.content}>
           {activeTab === "play" ? <PlayTab /> : null}
-          {activeTab === "friends" ? (
-            <ComingSoonPanel
-              icon="users"
-              title="Friends"
-              description="Seeing who's online and what they're playing needs a real TapkaCraft server tracking presence - this launcher only talks to Mojang, Microsoft and Modrinth today. That's a hosting commitment worth doing right, not faking."
-            />
-          ) : null}
+          {activeTab === "friends" ? <FriendsTab /> : null}
           {activeTab === "lan" ? <LanTab /> : null}
           {activeTab === "profiles" ? <ProfilesTab /> : null}
           {activeTab === "modrinth" ? <ModrinthTab /> : null}
