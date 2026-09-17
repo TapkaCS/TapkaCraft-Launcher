@@ -1,0 +1,121 @@
+.layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-width: 720px;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--tc-panel-bg);
+  border: 1px solid var(--tc-panel-border-light);
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tc-status-offline);
+}
+
+.statusPill[data-status="listening"] {
+  color: var(--tc-status-online);
+}
+
+.statusPill[data-status="error"] {
+  color: var(--tc-status-busy);
+}
+
+.description {
+  margin: 0 0 16px;
+  color: var(--tc-text-muted);
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.joinAsRow {
+  margin-bottom: 16px;
+  max-width: 320px;
+}
+
+.error {
+  margin: 0 0 12px;
+  color: var(--tc-danger);
+  font-size: 0.88em;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-content: center;
+  border-radius: 50%;
+  background: var(--tc-panel-bg);
+  border: 1px solid var(--tc-panel-border-light);
+  color: var(--tc-green-highlight);
+  margin-bottom: 4px;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-weight: 600;
+}
+
+.emptyDescription {
+  margin: 0;
+  max-width: 360px;
+  color: var(--tc-text-muted);
+  font-size: 0.88em;
+  line-height: 1.5;
+}
+
+.gameList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gameCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--tc-radius-sm);
+  background: var(--tc-card-bg);
+  border: 1px solid var(--tc-card-border);
+}
+
+.gameInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gameMotd {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gameAddress {
+  font-size: 0.82em;
+  color: var(--tc-text-muted);
+}

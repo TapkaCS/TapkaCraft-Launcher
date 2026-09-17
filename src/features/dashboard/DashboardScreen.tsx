@@ -1,13 +1,16 @@
 import { AccountMenu } from "@/components/AccountMenu/AccountMenu";
 import { NewProfileDialog } from "@/components/NewProfileDialog/NewProfileDialog";
 import { PixelLogo } from "@/components/PixelLogo/PixelLogo";
-import { TopTabs } from "@/components/TopTabs/TopTabs";
+import { Sidebar } from "@/components/Sidebar/Sidebar";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { useLauncherVersion } from "@/lib/useLauncherVersion";
 import { useAuthStore } from "@/state/authStore";
 import { useUiStore } from "@/state/uiStore";
 
+import { ComingSoonPanel } from "./ComingSoonPanel";
 import styles from "./DashboardScreen.module.css";
+import { DownloadsTab } from "./DownloadsTab";
+import { LanTab } from "./LanTab";
 import { ModpacksTab } from "./ModpacksTab";
 import { ModrinthTab } from "./ModrinthTab";
 import { PlayTab } from "./PlayTab";
@@ -36,17 +39,26 @@ export function DashboardScreen() {
         </div>
       </header>
 
-      <div className={styles.tabs}>
-        <TopTabs active={activeTab} onChange={setActiveTab} />
-      </div>
+      <div className={styles.body}>
+        <Sidebar active={activeTab} onChange={setActiveTab} />
 
-      <main className={styles.content}>
-        {activeTab === "play" ? <PlayTab /> : null}
-        {activeTab === "profiles" ? <ProfilesTab /> : null}
-        {activeTab === "modrinth" ? <ModrinthTab /> : null}
-        {activeTab === "modpacks" ? <ModpacksTab /> : null}
-        {activeTab === "settings" ? <SettingsScreen /> : null}
-      </main>
+        <main className={styles.content}>
+          {activeTab === "play" ? <PlayTab /> : null}
+          {activeTab === "friends" ? (
+            <ComingSoonPanel
+              icon="users"
+              title="Friends"
+              description="Seeing who's online and what they're playing needs a real TapkaCraft server tracking presence - this launcher only talks to Mojang, Microsoft and Modrinth today. That's a hosting commitment worth doing right, not faking."
+            />
+          ) : null}
+          {activeTab === "lan" ? <LanTab /> : null}
+          {activeTab === "profiles" ? <ProfilesTab /> : null}
+          {activeTab === "modrinth" ? <ModrinthTab /> : null}
+          {activeTab === "modpacks" ? <ModpacksTab /> : null}
+          {activeTab === "downloads" ? <DownloadsTab /> : null}
+          {activeTab === "settings" ? <SettingsScreen /> : null}
+        </main>
+      </div>
 
       <footer className={styles.footer}>
         <span>TapkaCraft Launcher{version ? ` v${version}` : ""}</span>

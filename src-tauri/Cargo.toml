@@ -37,6 +37,11 @@ futures-util = "0.3.34"
 sha2 = "0.10.9"
 base64 = "0.23.1"
 rand = "0.9.5"
+# LAN Discovery: needs SO_REUSEADDR set before bind so this launcher and
+# Minecraft's own client (or several launcher windows) can all listen on the
+# same multicast port at once - neither std nor tokio's UdpSocket exposes
+# that pre-bind, so the socket is built with socket2 and handed to tokio.
+socket2 = { version = "0.5", features = ["all"] }
 # windows-native backs onto Windows Credential Manager (the real target).
 # linux-native backs onto the kernel keyutils facility via syscalls rather
 # than a D-Bus secret-service daemon (gnome-keyring/kwallet), so it works

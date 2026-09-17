@@ -27,6 +27,13 @@ use crate::core::versions::VersionError;
 const INSTALL_PROGRESS_EVENT: &str = "install://progress";
 const LAUNCH_EVENT: &str = "launch://event";
 
+/// A LAN "Join" target from the frontend - see `launch::DirectConnect`.
+#[derive(Debug, serde::Deserialize)]
+pub struct DirectConnectArgs {
+    pub host: String,
+    pub port: u16,
+}
+
 #[derive(Debug)]
 pub enum LaunchCommandError {
     Instance(InstanceError),
@@ -155,6 +162,7 @@ pub async fn launch_instance(
     active_session: State<'_, ActiveSession>,
     id: String,
     concurrency: usize,
+    direct_connect: Option<DirectConnectArgs>,
 ) -> Result<i32, LaunchCommandError> {
     let instance = instance_service::get(&app_paths.instances_dir(), &id)?;
     if instance.loader.kind != LoaderKind::Vanilla && instance.loader.kind != LoaderKind::Fabric {
@@ -265,6 +273,11 @@ pub async fn launch_instance(
         }
     };
 
+    let direct_connect = direct_connect.map(|args| launch::DirectConnect {
+        host: args.host,
+        port: args.port,
+    });
+
     let instance_dir = instance_service::resolve_instance_dir(&app_paths.instances_dir(), &id)?;
 
     let (launch_tx, mut launch_rx) = tokio::sync::mpsc::unbounded_channel();
@@ -286,6 +299,7 @@ pub async fn launch_instance(
         launcher_name: "TapkaCraft Launcher",
         launcher_version: env!("CARGO_PKG_VERSION"),
         loader_override: loader_override.as_ref(),
+        direct_connect: direct_connect.as_ref(),
     };
 
     let started_at = std::time::Instant::now();

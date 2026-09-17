@@ -5,6 +5,7 @@ import { listenToInstallProgress } from "@/lib/api/versions";
 import { isTauri } from "@/lib/tauri";
 import { applyInstallProgress, type InstallProgress } from "@/state/installStore";
 import { useSettingsStore } from "@/state/settingsStore";
+import type { DirectConnect } from "@/types/launch";
 
 export type LaunchPhase = "idle" | "preparing" | "running" | "error";
 
@@ -33,7 +34,8 @@ interface LaunchState {
   error: string | null;
   exitCode: number | null;
 
-  launch: (id: string) => Promise<void>;
+  /** `directConnect` is the LAN "Join" flow - auto-connects on launch instead of opening the menu. */
+  launch: (id: string, directConnect?: DirectConnect) => Promise<void>;
 }
 
 function errorMessage(err: unknown): string {
@@ -49,7 +51,7 @@ export const useLaunchStore = create<LaunchState>((set, get) => ({
   error: null,
   exitCode: null,
 
-  launch: async (id) => {
+  launch: async (id, directConnect) => {
     if (get().launchingInstanceId) return; // one launch at a time
     if (!isTauri) {
       set({
@@ -88,7 +90,7 @@ export const useLaunchStore = create<LaunchState>((set, get) => ({
 
     try {
       const concurrency = useSettingsStore.getState().settings.downloads.concurrentDownloads;
-      const exitCode = await launchInstance(id, concurrency);
+      const exitCode = await launchInstance(id, concurrency, directConnect);
       set({ phase: "idle", launchingInstanceId: null, exitCode });
     } catch (err) {
       set({ phase: "error", launchingInstanceId: null, error: errorMessage(err) });

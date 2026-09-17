@@ -27,6 +27,7 @@ pub fn run() {
         .manage(app_paths)
         .manage(http_client)
         .manage(commands::accounts::ActiveSession::default())
+        .manage(commands::lan::LanDiscoveryState::default())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -51,6 +52,8 @@ pub fn run() {
             commands::accounts::sign_out,
             commands::accounts::remove_account,
             commands::launch::launch_instance,
+            commands::lan::start_lan_discovery,
+            commands::lan::stop_lan_discovery,
             commands::modrinth::search_mods,
             commands::modrinth::list_mod_versions,
             commands::modrinth::list_installed_mods,

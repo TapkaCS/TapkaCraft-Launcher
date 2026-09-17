@@ -6,8 +6,8 @@ import type { ThemeMode } from "@/types/settings";
 import styles from "./SettingsSections.module.css";
 
 const THEMES: { id: ThemeMode; label: string }[] = [
+  { id: "modern", label: "Modern (default)" },
   { id: "retro", label: "Retro" },
-  { id: "modern", label: "Modern" },
 ];
 
 export function AppearanceSection() {
@@ -23,9 +23,9 @@ export function AppearanceSection() {
         <div className={styles.rowLabel}>
           <strong>Theme</strong>
           <span>
-            Retro: dirt textures, pixel type, beveled panels. Modern: flatter panels and cleaner
-            type, same TapkaCraft identity. Same components either way - just different design
-            tokens.
+            Modern is TapkaCraft's current look - dark surfaces, flat rounded panels. Retro brings
+            back the original dirt textures, pixel type and beveled panels. Same components either
+            way - just different design tokens.
           </span>
         </div>
         <div className={styles.rowControl}>

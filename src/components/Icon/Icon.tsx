@@ -17,7 +17,12 @@ export type IconName =
   | "close"
   | "pencil"
   | "download"
-  | "microsoft";
+  | "microsoft"
+  | "users"
+  | "wifi"
+  | "userPlus"
+  | "crown"
+  | "mic";
 
 interface IconProps {
   name: IconName;
@@ -164,6 +169,105 @@ function renderPaths(name: IconName) {
           <rect x="12.8" y="2" width="9.2" height="9.2" fill="#7FBA00" />
           <rect x="2" y="12.8" width="9.2" height="9.2" fill="#00A4EF" />
           <rect x="12.8" y="12.8" width="9.2" height="9.2" fill="#FFB900" />
+        </>
+      );
+    case "users":
+      return (
+        <>
+          <circle cx="9" cy="8" r="3.4" fill="none" stroke="currentColor" strokeWidth="1.7" />
+          <path
+            d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+          />
+          <path
+            d="M15.5 5.2c1.6.4 2.8 1.8 2.8 3.5 0 1.7-1.2 3.1-2.8 3.5M18.5 20c0-2.9-1.7-5.1-4-5.8"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+          />
+        </>
+      );
+    case "wifi":
+      return (
+        <>
+          <path
+            d="M4 9.5a12 12 0 0 1 16 0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M7.2 13a7.5 7.5 0 0 1 9.6 0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M10.4 16.4a3 3 0 0 1 3.2 0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+          <circle cx="12" cy="19.2" r="1.2" fill="currentColor" />
+        </>
+      );
+    case "userPlus":
+      return (
+        <>
+          <circle cx="9" cy="8" r="3.4" fill="none" stroke="currentColor" strokeWidth="1.7" />
+          <path
+            d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+          />
+          <path
+            d="M17.5 6v6M14.5 9h6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </>
+      );
+    case "crown":
+      return (
+        <path
+          d="M3 8 L7 12 L12 5 L17 12 L21 8 L19.5 18 L4.5 18 Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+      );
+    case "mic":
+      return (
+        <>
+          <rect
+            x="9"
+            y="2.5"
+            width="6"
+            height="11"
+            rx="3"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+          />
+          <path
+            d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5M9 21.5h6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+          />
         </>
       );
   }

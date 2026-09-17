@@ -1,0 +1,35 @@
+.sidebar {
+  flex: none;
+  width: 208px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 10px;
+  background: var(--tc-panel-bg-strong);
+  border-right: 1px solid var(--tc-panel-border-dark);
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--tc-radius-sm);
+  color: var(--tc-text-secondary);
+  font-size: 0.95em;
+  text-align: left;
+}
+
+.item:hover {
+  background: var(--tc-panel-bg);
+  color: var(--tc-text-primary);
+}
+
+.active {
+  background: var(--tc-card-selected-bg);
+  color: var(--tc-green-highlight);
+  box-shadow: inset 3px 0 0 var(--tc-green-500);
+}

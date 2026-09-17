@@ -73,7 +73,7 @@ export const DEFAULT_SETTINGS: LauncherSettings = {
     concurrentDownloads: 4,
   },
   appearance: {
-    theme: "retro",
+    theme: "modern",
     compactMode: false,
   },
   advanced: {

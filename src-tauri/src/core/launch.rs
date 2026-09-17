@@ -135,6 +135,15 @@ pub struct LoaderOverride {
     pub extra_game_args: Vec<String>,
 }
 
+/// A specific server to auto-connect to on launch - e.g. a LAN game found by
+/// `core::lan` discovery. Translates to Minecraft's own `--server`/`--port`
+/// launch arguments, independent of `loader_override` so it works for a
+/// plain Vanilla instance too, not just a modded one.
+pub struct DirectConnect {
+    pub host: String,
+    pub port: u16,
+}
+
 /// Everything `launch` needs beyond the version's own metadata. Grouped
 /// into a struct (rather than nine positional parameters) purely for
 /// readability at the call site.
@@ -152,6 +161,7 @@ pub struct LaunchParams<'a> {
     pub launcher_name: &'a str,
     pub launcher_version: &'a str,
     pub loader_override: Option<&'a LoaderOverride>,
+    pub direct_connect: Option<&'a DirectConnect>,
 }
 
 /// Spawns the Minecraft client process and waits for it to exit, streaming
@@ -274,6 +284,12 @@ fn build_launch_args(
                 .iter()
                 .map(|arg| substitute(arg, &substitutions)),
         );
+    }
+    if let Some(connect) = params.direct_connect {
+        args.push("--server".to_string());
+        args.push(connect.host.clone());
+        args.push("--port".to_string());
+        args.push(connect.port.to_string());
     }
 
     Ok(args)
@@ -494,6 +510,7 @@ mod tests {
             launcher_name: "TapkaCraft Launcher",
             launcher_version: "0.1.0",
             loader_override: Some(&loader_override),
+            direct_connect: None,
         };
 
         let ctx = RuleContext::current(false);
@@ -516,6 +533,55 @@ mod tests {
         let cp_index = args.iter().position(|arg| arg == "-cp").unwrap();
         assert!(args[cp_index + 1].contains("fabric-loader-0.16.9.jar"));
         assert!(args[cp_index + 1].contains("1.20.1.jar")); // client jar still present too
+    }
+
+    #[test]
+    fn build_launch_args_appends_direct_connect_server_and_port_after_everything_else() {
+        let installed = InstalledVersion {
+            version_info: version_info_requiring_java(8),
+            client_jar: PathBuf::from("/unused/client.jar"),
+            natives_dir: PathBuf::from("/unused/natives"),
+        };
+        let runtime = DetectedRuntime {
+            java_path: PathBuf::from("java"),
+            major_version: 17,
+            version_string: "17.0.0".into(),
+            is_64_bit: true,
+            vendor: None,
+        };
+        let java_settings = JavaSettings {
+            memory_min_mb: 256,
+            memory_max_mb: 512,
+        };
+        let auth = fake_auth();
+        let direct_connect = DirectConnect {
+            host: "192.168.1.42".into(),
+            port: 54321,
+        };
+        let params = LaunchParams {
+            instance_dir: Path::new("/unused"),
+            java_settings: &java_settings,
+            installed: &installed,
+            libraries_dir: Path::new("/unused/libraries"),
+            assets_dir: Path::new("/unused/assets"),
+            runtime: &runtime,
+            auth: &auth,
+            launcher_name: "TapkaCraft Launcher",
+            launcher_version: "0.1.0",
+            // Proves this doesn't depend on a modded loader - a plain
+            // Vanilla instance (no loader_override) can still be told to
+            // auto-connect, which is exactly the LAN "Join" case.
+            loader_override: None,
+            direct_connect: Some(&direct_connect),
+        };
+
+        let ctx = RuleContext::current(false);
+        let args = build_launch_args(&params, &ctx).unwrap();
+
+        let server_index = args.iter().position(|arg| arg == "--server").unwrap();
+        assert_eq!(args[server_index + 1], "192.168.1.42");
+        let port_index = args.iter().position(|arg| arg == "--port").unwrap();
+        assert_eq!(args[port_index + 1], "54321");
     }
 
     #[tokio::test]
@@ -548,6 +614,7 @@ mod tests {
             launcher_name: "TapkaCraft Launcher",
             launcher_version: "0.1.0",
             loader_override: None,
+            direct_connect: None,
         };
 
         let result = launch(params, LaunchEventSink::none()).await;
@@ -669,6 +736,7 @@ mod tests {
             launcher_name: "TapkaCraft Launcher",
             launcher_version: "0.1.0-test",
             loader_override: None,
+            direct_connect: None,
         };
 
         let exit_code = launch(params, LaunchEventSink::new(tx)).await.unwrap();

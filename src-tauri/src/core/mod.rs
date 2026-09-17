@@ -15,6 +15,7 @@ pub mod instances;
 pub mod accounts;
 pub mod downloads;
 pub mod java;
+pub mod lan;
 pub mod launch;
 pub mod loaders;
 pub mod modpacks;

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
-export type DashboardTab = "play" | "profiles" | "modrinth" | "modpacks" | "settings";
+export type DashboardTab =
+  "play" | "friends" | "lan" | "profiles" | "modrinth" | "modpacks" | "downloads" | "settings";
 
 interface UiStore {
   activeTab: DashboardTab;
