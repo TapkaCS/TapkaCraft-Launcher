@@ -38,8 +38,10 @@ export function GeneralSection() {
             {version ? `You have version ${version}. ` : ""}
             Checks the latest release published on GitHub.
           </span>
-          {updateStatus === "error" && updateError ? (
+          {updateStatus === "check-error" && updateError ? (
             <span className={styles.hint}>Check failed: {updateError}</span>
+          ) : updateStatus === "install-error" && updateError ? (
+            <span className={styles.hint}>Update failed: {updateError}</span>
           ) : STATUS_LABEL[updateStatus] ? (
             <span className={styles.hint}>{STATUS_LABEL[updateStatus]}</span>
           ) : null}

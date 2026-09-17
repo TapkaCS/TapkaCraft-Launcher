@@ -11,6 +11,11 @@
   border-bottom: 1px solid var(--tc-panel-border-dark);
 }
 
+.banner[data-variant="error"] {
+  background: var(--tc-danger);
+  color: #fff;
+}
+
 .actions {
   display: flex;
   gap: 8px;
