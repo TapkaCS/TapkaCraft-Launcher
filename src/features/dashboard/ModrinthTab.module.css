@@ -18,6 +18,34 @@
   color: var(--tc-text-muted);
 }
 
+.categoryRow {
+  display: flex;
+  gap: 6px;
+}
+
+.categoryButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: var(--tc-panel-bg);
+  border: 1px solid var(--tc-panel-border-light);
+  border-radius: 999px;
+  color: var(--tc-text-secondary);
+  font-size: 0.85em;
+}
+
+.categoryButton:hover {
+  color: var(--tc-text-primary);
+  border-color: var(--tc-card-hover-border);
+}
+
+.categoryActive {
+  background: var(--tc-card-selected-bg);
+  border-color: var(--tc-card-selected-border);
+  color: var(--tc-green-highlight);
+}
+
 .header {
   display: flex;
   align-items: flex-start;

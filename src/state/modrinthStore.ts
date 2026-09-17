@@ -1,13 +1,22 @@
 import { create } from "zustand";
 
-import { installMod, listInstalledMods, listModVersions, searchMods } from "@/lib/api/modrinth";
+import {
+  installContent,
+  listContentVersions,
+  listInstalledContent,
+  searchContent,
+} from "@/lib/api/modrinth";
 import { listenToInstallProgress } from "@/lib/api/versions";
 import { isTauri } from "@/lib/tauri";
 import { applyInstallProgress, type InstallProgress } from "@/state/installStore";
 import { useSettingsStore } from "@/state/settingsStore";
-import type { InstalledMods, SearchHit } from "@/types/modrinth";
+import type { ContentKind, InstalledContentList, SearchHit } from "@/types/modrinth";
 
 interface ModrinthState {
+  contentKind: ContentKind;
+  /** Switching category clears the previous category's results/installed list - they're a different catalog. */
+  setContentKind: (kind: ContentKind) => void;
+
   query: string;
   setQuery: (query: string) => void;
 
@@ -16,8 +25,8 @@ interface ModrinthState {
   searchError: string | null;
   search: (loader: string, gameVersion: string) => Promise<void>;
 
-  installedMods: InstalledMods | null;
-  loadInstalledMods: (instanceId: string) => Promise<void>;
+  installedContent: InstalledContentList | null;
+  loadInstalledContent: (instanceId: string) => Promise<void>;
 
   installingProjectId: string | null;
   installProgress: InstallProgress | null;
@@ -36,6 +45,18 @@ function errorMessage(err: unknown): string {
 }
 
 export const useModrinthStore = create<ModrinthState>((set, get) => ({
+  contentKind: "mod",
+  setContentKind: (kind) =>
+    set({
+      contentKind: kind,
+      results: [],
+      searchStatus: "idle",
+      searchError: null,
+      installedContent: null,
+      installError: null,
+      skippedDependencies: [],
+    }),
+
   query: "",
   setQuery: (query) => set({ query }),
 
@@ -49,22 +70,22 @@ export const useModrinthStore = create<ModrinthState>((set, get) => ({
     }
     set({ searchStatus: "loading", searchError: null });
     try {
-      const response = await searchMods(get().query, loader, gameVersion);
+      const response = await searchContent(get().query, get().contentKind, loader, gameVersion);
       set({ results: response.hits, searchStatus: "idle" });
     } catch (err) {
       set({ searchStatus: "error", searchError: errorMessage(err) });
     }
   },
 
-  installedMods: null,
-  loadInstalledMods: async (instanceId) => {
+  installedContent: null,
+  loadInstalledContent: async (instanceId) => {
     if (!isTauri) return;
     try {
-      const installed = await listInstalledMods(instanceId);
-      set({ installedMods: installed });
+      const installed = await listInstalledContent(instanceId, get().contentKind);
+      set({ installedContent: installed });
     } catch {
       // Best-effort UI hint only - a failure here shouldn't block browsing.
-      set({ installedMods: null });
+      set({ installedContent: null });
     }
   },
 
@@ -75,10 +96,11 @@ export const useModrinthStore = create<ModrinthState>((set, get) => ({
   install: async (instanceId, projectId, loader, gameVersion) => {
     if (get().installingProjectId) return; // one install at a time
     if (!isTauri) {
-      set({ installError: "Installing mods requires the desktop app." });
+      set({ installError: "Installing requires the desktop app." });
       return;
     }
 
+    const contentKind = get().contentKind;
     set({
       installingProjectId: projectId,
       installProgress: null,
@@ -91,15 +113,15 @@ export const useModrinthStore = create<ModrinthState>((set, get) => ({
     });
 
     try {
-      const versions = await listModVersions(projectId, loader, gameVersion);
+      const versions = await listContentVersions(projectId, contentKind, loader, gameVersion);
       const newest = versions[0];
       if (!newest) {
-        throw new Error("No version of this mod is compatible with the selected profile.");
+        throw new Error("No version of this is compatible with the selected profile.");
       }
       const concurrency = useSettingsStore.getState().settings.downloads.concurrentDownloads;
-      const outcome = await installMod(instanceId, newest, concurrency);
+      const outcome = await installContent(instanceId, contentKind, newest, concurrency);
       set({ installingProjectId: null, skippedDependencies: outcome.skippedDependencies });
-      await get().loadInstalledMods(instanceId);
+      await get().loadInstalledContent(instanceId);
     } catch (err) {
       set({ installingProjectId: null, installError: errorMessage(err) });
     } finally {

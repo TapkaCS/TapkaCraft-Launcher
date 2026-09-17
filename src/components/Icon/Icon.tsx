@@ -22,7 +22,9 @@ export type IconName =
   | "wifi"
   | "userPlus"
   | "crown"
-  | "mic";
+  | "mic"
+  | "image"
+  | "sparkles";
 
 interface IconProps {
   name: IconName;
@@ -267,6 +269,43 @@ function renderPaths(name: IconName) {
             stroke="currentColor"
             strokeWidth="1.7"
             strokeLinecap="round"
+          />
+        </>
+      );
+    case "image":
+      return (
+        <>
+          <rect
+            x="3"
+            y="4"
+            width="18"
+            height="16"
+            rx="2"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+          />
+          <circle cx="8.5" cy="9.5" r="1.6" fill="currentColor" />
+          <path
+            d="M4 17 L9.5 12 L13.5 15.5 L16.5 12.5 L20 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </>
+      );
+    case "sparkles":
+      return (
+        <>
+          <path
+            d="M12 3 L13.6 9 L19.5 10.5 L13.6 12 L12 18 L10.4 12 L4.5 10.5 L10.4 9 Z"
+            fill="currentColor"
+          />
+          <path
+            d="M18.5 15.5 L19.3 18 L21.5 18.8 L19.3 19.6 L18.5 22 L17.7 19.6 L15.5 18.8 L17.7 18 Z"
+            fill="currentColor"
           />
         </>
       );

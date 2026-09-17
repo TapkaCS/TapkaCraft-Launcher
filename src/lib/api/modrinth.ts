@@ -5,36 +5,53 @@
 import { invoke } from "@tauri-apps/api/core";
 
 import type {
-  InstallModOutcome,
-  InstalledMods,
+  ContentKind,
+  InstallContentOutcome,
+  InstalledContentList,
   ModrinthVersion,
   SearchResponse,
 } from "@/types/modrinth";
 
-export function searchMods(
+export function searchContent(
   query: string,
+  contentKind: ContentKind,
   loader: string,
   gameVersion: string,
 ): Promise<SearchResponse> {
-  return invoke<SearchResponse>("search_mods", { query, loader, gameVersion });
+  return invoke<SearchResponse>("search_content", { query, contentKind, loader, gameVersion });
 }
 
-export function listModVersions(
+export function listContentVersions(
   projectId: string,
+  contentKind: ContentKind,
   loader: string,
   gameVersion: string,
 ): Promise<ModrinthVersion[]> {
-  return invoke<ModrinthVersion[]>("list_mod_versions", { projectId, loader, gameVersion });
+  return invoke<ModrinthVersion[]>("list_content_versions", {
+    projectId,
+    contentKind,
+    loader,
+    gameVersion,
+  });
 }
 
-export function listInstalledMods(id: string): Promise<InstalledMods> {
-  return invoke<InstalledMods>("list_installed_mods", { id });
-}
-
-export function installMod(
+export function listInstalledContent(
   id: string,
+  contentKind: ContentKind,
+): Promise<InstalledContentList> {
+  return invoke<InstalledContentList>("list_installed_content", { id, contentKind });
+}
+
+export function installContent(
+  id: string,
+  contentKind: ContentKind,
   version: ModrinthVersion,
   concurrency: number,
-): Promise<InstallModOutcome> {
-  return invoke<InstallModOutcome>("install_mod", { id, version, concurrency });
+): Promise<InstallContentOutcome> {
+  return invoke<InstallContentOutcome>("install_content", {
+    id,
+    contentKind,
+    version,
+    concurrency,
+  });
 }

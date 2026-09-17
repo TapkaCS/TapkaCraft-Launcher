@@ -1,7 +1,8 @@
 //! Tauri IPC wrapper around `core::modrinth`: search/browse are generic
 //! (loader + game version, not tied to a specific instance - useful for
-//! browsing before an instance is even selected), while installing a mod
-//! is always against a specific instance so its loader can be validated.
+//! browsing before an instance is even selected), while installing
+//! content is always against a specific instance so its loader can be
+//! validated (mods only - see `ContentKind::uses_loader_facet`).
 
 use std::fmt;
 
@@ -11,8 +12,8 @@ use crate::core::downloads::{DownloadEvent, ProgressSink};
 use crate::core::instances::model::LoaderKind;
 use crate::core::instances::service::{self as instance_service, InstanceError};
 use crate::core::modrinth::api::{self, ModrinthVersion, SearchResponse};
-use crate::core::modrinth::install::{self, InstalledMod, InstalledMods};
-use crate::core::modrinth::{loader_identifier, ModrinthError};
+use crate::core::modrinth::install::{self, InstalledContent, InstalledContentList};
+use crate::core::modrinth::{loader_identifier, ContentKind, ModrinthError};
 use crate::core::paths::AppPaths;
 
 const INSTALL_PROGRESS_EVENT: &str = "install://progress";
@@ -62,26 +63,29 @@ impl serde::Serialize for ModrinthCommandError {
 
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct InstallModOutcome {
-    pub installed: Vec<InstalledMod>,
+pub struct InstallContentOutcome {
+    pub installed: Vec<InstalledContent>,
     pub skipped_dependencies: Vec<String>,
 }
 
-/// Mods compatible with `loader`/`game_version` matching `query` (which may
-/// be empty for Modrinth's default-sorted browse listing).
+/// Content of `content_kind` compatible with `game_version` (and `loader`,
+/// for mods - see `ContentKind::uses_loader_facet`) matching `query`
+/// (which may be empty for Modrinth's default-sorted browse listing).
 #[tauri::command]
-pub async fn search_mods(
+pub async fn search_content(
     http_client: State<'_, reqwest::Client>,
     query: String,
+    content_kind: ContentKind,
     loader: String,
     game_version: String,
 ) -> Result<SearchResponse, ModrinthCommandError> {
+    let loader_facet = content_kind.uses_loader_facet().then(|| loader.as_str());
     api::search(
         http_client.inner(),
         api::MODRINTH_API_URL,
-        "mod",
+        content_kind.project_type(),
         &query,
-        &loader,
+        loader_facet,
         &game_version,
         20,
     )
@@ -89,58 +93,69 @@ pub async fn search_mods(
     .map_err(ModrinthCommandError::from)
 }
 
-/// Every version of `project_id` compatible with `loader`/`game_version`.
+/// Every version of `project_id` compatible with `game_version` (and
+/// `loader`, for mods).
 #[tauri::command]
-pub async fn list_mod_versions(
+pub async fn list_content_versions(
     http_client: State<'_, reqwest::Client>,
     project_id: String,
+    content_kind: ContentKind,
     loader: String,
     game_version: String,
 ) -> Result<Vec<ModrinthVersion>, ModrinthCommandError> {
+    let loader_facet = content_kind.uses_loader_facet().then(|| loader.as_str());
     api::list_project_versions(
         http_client.inner(),
         api::MODRINTH_API_URL,
         &project_id,
-        &loader,
+        loader_facet,
         &game_version,
     )
     .await
     .map_err(ModrinthCommandError::from)
 }
 
-/// Mods this launcher has installed into `id`'s `mods/` directory
-/// (best-effort local record - see `core::modrinth::install::read_installed`).
+/// Content of `content_kind` this launcher has installed into `id`'s
+/// content-kind-appropriate directory (best-effort local record - see
+/// `core::modrinth::install::read_installed`).
 #[tauri::command]
-pub fn list_installed_mods(
+pub fn list_installed_content(
     app_paths: State<AppPaths>,
     id: String,
-) -> Result<InstalledMods, ModrinthCommandError> {
+    content_kind: ContentKind,
+) -> Result<InstalledContentList, ModrinthCommandError> {
     let dir = instance_service::resolve_instance_dir(&app_paths.instances_dir(), &id)?;
-    Ok(install::read_installed(&dir))
+    Ok(install::read_installed(&dir, content_kind))
 }
 
 /// Installs `version` (and its resolvable required dependencies) into
-/// instance `id`'s `mods/` directory. Only Fabric instances are supported
-/// so far, matching what `install_instance`/`launch_instance` can actually
-/// install and launch.
+/// instance `id`'s content-kind-appropriate directory. Mods specifically
+/// only support Fabric instances so far, matching what
+/// `install_instance`/`launch_instance` can actually install and launch;
+/// resource packs and shaders aren't tied to a loader at all, so they
+/// install into any instance.
 #[tauri::command]
-pub async fn install_mod(
+pub async fn install_content(
     app: AppHandle,
     app_paths: State<'_, AppPaths>,
     http_client: State<'_, reqwest::Client>,
     id: String,
+    content_kind: ContentKind,
     version: ModrinthVersion,
     concurrency: usize,
-) -> Result<InstallModOutcome, ModrinthCommandError> {
+) -> Result<InstallContentOutcome, ModrinthCommandError> {
     let instance = instance_service::get(&app_paths.instances_dir(), &id)?;
-    if instance.loader.kind != LoaderKind::Fabric {
-        return Err(ModrinthCommandError::UnsupportedLoader {
-            loader: loader_label(instance.loader.kind),
-        });
-    }
-    let loader = loader_identifier(instance.loader.kind).expect(
-        "just checked instance.loader.kind == LoaderKind::Fabric, which always maps to Some",
-    );
+
+    let loader = if content_kind.uses_loader_facet() {
+        if instance.loader.kind != LoaderKind::Fabric {
+            return Err(ModrinthCommandError::UnsupportedLoader {
+                loader: loader_label(instance.loader.kind),
+            });
+        }
+        loader_identifier(instance.loader.kind)
+    } else {
+        None
+    };
 
     let instance_dir = instance_service::resolve_instance_dir(&app_paths.instances_dir(), &id)?;
     let client = http_client.inner().clone();
@@ -162,6 +177,7 @@ pub async fn install_mod(
         &client,
         &target,
         &instance_dir,
+        content_kind,
         version,
         concurrency,
         ProgressSink::new(tx),
@@ -170,7 +186,7 @@ pub async fn install_mod(
     let _ = forwarder.await;
     let result = result?;
 
-    Ok(InstallModOutcome {
+    Ok(InstallContentOutcome {
         installed: result.installed,
         skipped_dependencies: result.skipped_dependencies,
     })

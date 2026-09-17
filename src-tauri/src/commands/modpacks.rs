@@ -80,9 +80,10 @@ impl serde::Serialize for ModpackCommandError {
 }
 
 /// Modpacks compatible with `loader`/`game_version` matching `query` -
-/// identical to `commands::modrinth::search_mods` except for the
+/// identical to `commands::modrinth::search_content` except for the
 /// `project_type`, since Modrinth hosts modpacks in the same catalog as
-/// mods.
+/// mods. Unlike resource packs/shaders, modpacks are always loader-gated
+/// (a modpack targets one specific loader), so `loader` is always sent.
 #[tauri::command]
 pub async fn search_modpacks(
     http_client: State<'_, reqwest::Client>,
@@ -95,7 +96,7 @@ pub async fn search_modpacks(
         api::MODRINTH_API_URL,
         "modpack",
         &query,
-        &loader,
+        Some(&loader),
         &game_version,
         20,
     )
@@ -115,7 +116,7 @@ pub async fn list_modpack_versions(
         http_client.inner(),
         api::MODRINTH_API_URL,
         &project_id,
-        &loader,
+        Some(&loader),
         &game_version,
     )
     .await

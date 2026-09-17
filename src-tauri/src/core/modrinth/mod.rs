@@ -1,17 +1,61 @@
-//! `ModrinthService` (Phase 7).
+//! `ModrinthService` (Phase 7, generalized in Phase 9d).
 //!
-//! Client for the public Modrinth API: search/browse mods; project version
-//! metadata filtered to what an instance's Minecraft version and loader can
-//! actually use; installing a chosen version's file (hash-verified, unlike
-//! Fabric's meta API Modrinth publishes real sha1 hashes) alongside its
-//! required dependencies, resolved recursively. Resource packs, shaders and
-//! modpacks share the same API shape but aren't wired up yet - only the
-//! `mod` project type, installed into an instance's `mods/` directory.
+//! Client for the public Modrinth API: search/browse content; project
+//! version metadata filtered to what an instance's Minecraft version (and,
+//! for mods specifically, loader) can actually use; installing a chosen
+//! version's file (hash-verified, unlike Fabric's meta API Modrinth
+//! publishes real sha1 hashes) alongside its required dependencies,
+//! resolved recursively. Modpacks share the same search API shape but are
+//! a separate installer (`core::modpacks`) - they create a whole new
+//! instance rather than installing into an existing one's subdirectory.
 
 use std::fmt;
 
 pub mod api;
 pub mod install;
+
+/// The three single-file content types this launcher can browse on
+/// Modrinth and drop straight into an existing instance - modpacks are
+/// deliberately not here; installing one creates a whole new instance
+/// through `core::modpacks` instead of adding a file to one.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ContentKind {
+    Mod,
+    Resourcepack,
+    Shader,
+}
+
+impl ContentKind {
+    pub fn project_type(self) -> &'static str {
+        match self {
+            Self::Mod => "mod",
+            Self::Resourcepack => "resourcepack",
+            Self::Shader => "shader",
+        }
+    }
+
+    /// Where a version's file lands inside an instance directory - the
+    /// same folder names vanilla Minecraft itself already reads from, so
+    /// nothing extra is needed for the game to pick these up.
+    pub fn install_subdir(self) -> &'static str {
+        match self {
+            Self::Mod => "mods",
+            Self::Resourcepack => "resourcepacks",
+            Self::Shader => "shaderpacks",
+        }
+    }
+
+    /// Only mods are tied to a specific mod loader (Fabric/Forge/...).
+    /// Resource packs and shaders are plain assets vanilla Minecraft loads
+    /// by itself - filtering or resolving them by a mod loader facet would
+    /// just incorrectly exclude real ones, which tag themselves by
+    /// whatever renderer they target (e.g. Iris/OptiFine for shaders), not
+    /// by mod loader.
+    pub fn uses_loader_facet(self) -> bool {
+        matches!(self, Self::Mod)
+    }
+}
 
 #[derive(Debug)]
 pub enum ModrinthError {

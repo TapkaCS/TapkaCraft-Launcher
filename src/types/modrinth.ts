@@ -4,8 +4,8 @@
  * names verbatim (the Rust structs behind them have to stay snake_case to
  * deserialize Modrinth's real API responses, so they cross the Tauri IPC
  * boundary as-is too) - the one place in this codebase that isn't
- * camelCase. `InstalledMod`/`InstalledMods` are this launcher's own data
- * and are camelCase like everything else.
+ * camelCase. `InstalledContent`/`InstalledContentList` are this launcher's
+ * own data and are camelCase like everything else.
  */
 
 export interface SearchHit {
@@ -51,18 +51,27 @@ export interface ModrinthVersion {
   files: ModrinthFile[];
 }
 
-export interface InstalledMod {
+/** Mirrors Rust's `ContentKind` (`src-tauri/src/core/modrinth/mod.rs`) - the three single-file types installable straight into an instance. Modpacks are a separate flow (`types/instance.ts`'s modpack install creates a whole new instance, never one of these). */
+export type ContentKind = "mod" | "resourcepack" | "shader";
+
+export const CONTENT_KIND_LABELS: Record<ContentKind, string> = {
+  mod: "Mods",
+  resourcepack: "Resource Packs",
+  shader: "Shaders",
+};
+
+export interface InstalledContent {
   projectId: string;
   versionId: string;
   title: string;
   fileName: string;
 }
 
-export interface InstalledMods {
-  mods: Record<string, InstalledMod>;
+export interface InstalledContentList {
+  items: Record<string, InstalledContent>;
 }
 
-export interface InstallModOutcome {
-  installed: InstalledMod[];
+export interface InstallContentOutcome {
+  installed: InstalledContent[];
   skippedDependencies: string[];
 }
