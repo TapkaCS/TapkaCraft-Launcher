@@ -15,8 +15,9 @@ export function searchModpacks(
   query: string,
   loader: string,
   gameVersion: string,
+  categories: string[],
 ): Promise<SearchResponse> {
-  return invoke<SearchResponse>("search_modpacks", { query, loader, gameVersion });
+  return invoke<SearchResponse>("search_modpacks", { query, loader, gameVersion, categories });
 }
 
 export function listModpackVersions(

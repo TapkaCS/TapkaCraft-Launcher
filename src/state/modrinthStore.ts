@@ -20,6 +20,15 @@ interface ModrinthState {
   query: string;
   setQuery: (query: string) => void;
 
+  /**
+   * Genre/theme tags (e.g. "adventure", "optimization") to additionally
+   * filter by, OR'd together - always tags a real search hit already came
+   * back with (see the category chips on each result), never a hardcoded
+   * list, so there's no risk of a guessed tag silently matching nothing.
+   */
+  categories: string[];
+  toggleCategory: (category: string) => void;
+
   results: SearchHit[];
   searchStatus: "idle" | "loading" | "error";
   searchError: string | null;
@@ -49,6 +58,7 @@ export const useModrinthStore = create<ModrinthState>((set, get) => ({
   setContentKind: (kind) =>
     set({
       contentKind: kind,
+      categories: [],
       results: [],
       searchStatus: "idle",
       searchError: null,
@@ -60,6 +70,14 @@ export const useModrinthStore = create<ModrinthState>((set, get) => ({
   query: "",
   setQuery: (query) => set({ query }),
 
+  categories: [],
+  toggleCategory: (category) =>
+    set((state) => ({
+      categories: state.categories.includes(category)
+        ? state.categories.filter((existing) => existing !== category)
+        : [...state.categories, category],
+    })),
+
   results: [],
   searchStatus: "idle",
   searchError: null,
@@ -70,7 +88,13 @@ export const useModrinthStore = create<ModrinthState>((set, get) => ({
     }
     set({ searchStatus: "loading", searchError: null });
     try {
-      const response = await searchContent(get().query, get().contentKind, loader, gameVersion);
+      const response = await searchContent(
+        get().query,
+        get().contentKind,
+        loader,
+        gameVersion,
+        get().categories,
+      );
       set({ results: response.hits, searchStatus: "idle" });
     } catch (err) {
       set({ searchStatus: "error", searchError: errorMessage(err) });

@@ -38,6 +38,8 @@ export function ModrinthTab() {
   const setContentKind = useModrinthStore((state) => state.setContentKind);
   const query = useModrinthStore((state) => state.query);
   const setQuery = useModrinthStore((state) => state.setQuery);
+  const categories = useModrinthStore((state) => state.categories);
+  const toggleCategory = useModrinthStore((state) => state.toggleCategory);
   const results = useModrinthStore((state) => state.results);
   const searchStatus = useModrinthStore((state) => state.searchStatus);
   const searchError = useModrinthStore((state) => state.searchError);
@@ -78,6 +80,11 @@ export function ModrinthTab() {
   function handleSearch() {
     if (!selectedInstance) return;
     void search(selectedInstance.loader.type, selectedInstance.minecraftVersion);
+  }
+
+  function handleToggleCategory(category: string) {
+    toggleCategory(category);
+    handleSearch();
   }
 
   return (
@@ -126,6 +133,23 @@ export function ModrinthTab() {
         </form>
       </div>
 
+      {categories.length > 0 ? (
+        <div className={styles.activeFilters}>
+          <span className={styles.activeFiltersLabel}>Filtering by</span>
+          {categories.map((category) => (
+            <button
+              key={category}
+              type="button"
+              className={styles.filterChip}
+              onClick={() => handleToggleCategory(category)}
+            >
+              {category}
+              <Icon name="close" size={10} />
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       {contentKind === "mod" && !canInstall ? (
         <p className={styles.notice}>
           Only Fabric profiles support installing mods so far. You can still browse, but Install is
@@ -164,6 +188,8 @@ export function ModrinthTab() {
               key={hit.project_id}
               hit={hit}
               fallbackIcon={CATEGORY_ICONS[contentKind]}
+              activeCategories={categories}
+              onToggleCategory={handleToggleCategory}
               installed={installedProjectIds.has(hit.project_id)}
               installing={installingProjectId === hit.project_id}
               disabled={!canInstall || installingProjectId !== null}
@@ -186,6 +212,8 @@ export function ModrinthTab() {
 function ModResultRow({
   hit,
   fallbackIcon,
+  activeCategories,
+  onToggleCategory,
   installed,
   installing,
   disabled,
@@ -193,6 +221,8 @@ function ModResultRow({
 }: {
   hit: SearchHit;
   fallbackIcon: IconName;
+  activeCategories: string[];
+  onToggleCategory: (category: string) => void;
   installed: boolean;
   installing: boolean;
   disabled: boolean;
@@ -211,6 +241,23 @@ function ModResultRow({
         <p className={styles.cardTitle}>{hit.title}</p>
         <p className={styles.description}>{hit.description}</p>
         <p className={styles.stats}>&#8595; {formatDownloads(hit.downloads)} downloads</p>
+        {hit.categories.length > 0 ? (
+          <div className={styles.tagRow}>
+            {hit.categories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                className={[styles.tag, activeCategories.includes(category) ? styles.tagActive : ""]
+                  .filter(Boolean)
+                  .join(" ")}
+                title={`Filter by "${category}"`}
+                onClick={() => onToggleCategory(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
       <RetroButton
         variant={installed ? "secondary" : "primary"}

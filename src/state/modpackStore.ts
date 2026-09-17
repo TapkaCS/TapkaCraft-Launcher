@@ -19,6 +19,10 @@ interface ModpackState {
   query: string;
   setQuery: (query: string) => void;
 
+  /** Genre/theme tags to additionally filter by - see `modrinthStore`'s identical field for why these are never a hardcoded list. */
+  categories: string[];
+  toggleCategory: (category: string) => void;
+
   results: SearchHit[];
   searchStatus: "idle" | "loading" | "error";
   searchError: string | null;
@@ -52,6 +56,14 @@ export const useModpackStore = create<ModpackState>((set, get) => ({
   query: "",
   setQuery: (query) => set({ query }),
 
+  categories: [],
+  toggleCategory: (category) =>
+    set((state) => ({
+      categories: state.categories.includes(category)
+        ? state.categories.filter((existing) => existing !== category)
+        : [...state.categories, category],
+    })),
+
   results: [],
   searchStatus: "idle",
   searchError: null,
@@ -62,7 +74,7 @@ export const useModpackStore = create<ModpackState>((set, get) => ({
     }
     set({ searchStatus: "loading", searchError: null });
     try {
-      const response = await searchModpacks(get().query, loader, gameVersion);
+      const response = await searchModpacks(get().query, loader, gameVersion, get().categories);
       set({ results: response.hits, searchStatus: "idle" });
     } catch (err) {
       set({ searchStatus: "error", searchError: errorMessage(err) });

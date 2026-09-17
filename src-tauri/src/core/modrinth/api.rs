@@ -121,11 +121,29 @@ fn build_url(base_url: &str, segments: &[&str]) -> Result<reqwest::Url, Modrinth
 /// is given - omitted entirely for content (resource packs, shaders)
 /// that isn't tied to a mod loader, since Modrinth's own facet AND's every
 /// group together and a loader group real resource packs/shaders never
-/// tag themselves with would just filter out everything.
-fn build_search_facets(project_type: &str, loader: Option<&str>, game_version: &str) -> String {
+/// tag themselves with would just filter out everything. `categories`
+/// (genre/theme tags like "adventure" or "kitchen-sink") are OR'd together
+/// in their own group when given - deliberately never a hardcoded list
+/// here: the caller only ever passes back a tag Modrinth itself already
+/// returned on a real hit's `categories` field, so there's no risk of a
+/// guessed/misspelled tag silently matching nothing.
+fn build_search_facets(
+    project_type: &str,
+    loader: Option<&str>,
+    game_version: &str,
+    categories: &[String],
+) -> String {
     let mut groups: Vec<Vec<String>> = vec![vec![format!("project_type:{project_type}")]];
     if let Some(loader) = loader {
         groups.push(vec![format!("categories:{loader}")]);
+    }
+    if !categories.is_empty() {
+        groups.push(
+            categories
+                .iter()
+                .map(|category| format!("categories:{category}"))
+                .collect(),
+        );
     }
     groups.push(vec![format!("versions:{game_version}")]);
     serde_json::to_string(&groups).expect("Vec<Vec<String>> always serializes")
@@ -133,9 +151,10 @@ fn build_search_facets(project_type: &str, loader: Option<&str>, game_version: &
 
 /// Searches for projects of `project_type` (`"mod"`, `"resourcepack"`,
 /// `"shader"` or `"modpack"`) compatible with `game_version`, and with
-/// `loader` when one is given (see `ContentKind::uses_loader_facet`).
-/// `query` may be empty (an empty search still returns Modrinth's
-/// default-sorted results, useful for "just show me something" browsing).
+/// `loader` when one is given (see `ContentKind::uses_loader_facet`) and
+/// `categories` when any are selected. `query` may be empty (an empty
+/// search still returns Modrinth's default-sorted results, useful for
+/// "just show me something" browsing).
 pub async fn search(
     client: &reqwest::Client,
     base_url: &str,
@@ -143,9 +162,10 @@ pub async fn search(
     query: &str,
     loader: Option<&str>,
     game_version: &str,
+    categories: &[String],
     limit: u32,
 ) -> Result<SearchResponse, ModrinthError> {
-    let facets = build_search_facets(project_type, loader, game_version);
+    let facets = build_search_facets(project_type, loader, game_version, categories);
     let mut url = build_url(base_url, &["search"])?;
     url.query_pairs_mut()
         .append_pair("query", query)
@@ -216,7 +236,7 @@ mod tests {
         let base = spawn_mock_server(files).await;
 
         let client = reqwest::Client::new();
-        let result = search(&client, &base, "mod", "sodium", Some("fabric"), "1.20.1", 20)
+        let result = search(&client, &base, "mod", "sodium", Some("fabric"), "1.20.1", &[], 20)
             .await
             .unwrap();
         assert_eq!(result.total_hits, 1);
@@ -230,19 +250,29 @@ mod tests {
         let base = spawn_mock_server(files).await;
 
         let client = reqwest::Client::new();
-        let result = search(&client, &base, "mod", "sodium", Some("fabric"), "1.20.1", 20).await;
+        let result =
+            search(&client, &base, "mod", "sodium", Some("fabric"), "1.20.1", &[], 20).await;
         assert!(matches!(result, Err(ModrinthError::Network(_))));
     }
 
     #[test]
     fn build_search_facets_includes_the_loader_group_only_when_one_is_given() {
         assert_eq!(
-            build_search_facets("mod", Some("fabric"), "1.20.1"),
+            build_search_facets("mod", Some("fabric"), "1.20.1", &[]),
             r#"[["project_type:mod"],["categories:fabric"],["versions:1.20.1"]]"#
         );
         assert_eq!(
-            build_search_facets("resourcepack", None, "1.20.1"),
+            build_search_facets("resourcepack", None, "1.20.1", &[]),
             r#"[["project_type:resourcepack"],["versions:1.20.1"]]"#
+        );
+    }
+
+    #[test]
+    fn build_search_facets_ors_every_selected_category_in_one_group() {
+        let categories = vec!["adventure".to_string(), "kitchen-sink".to_string()];
+        assert_eq!(
+            build_search_facets("modpack", Some("fabric"), "1.20.1", &categories),
+            r#"[["project_type:modpack"],["categories:fabric"],["categories:adventure","categories:kitchen-sink"],["versions:1.20.1"]]"#
         );
     }
 

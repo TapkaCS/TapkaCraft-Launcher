@@ -41,6 +41,8 @@ export function ModpacksTab() {
 
   const query = useModpackStore((state) => state.query);
   const setQuery = useModpackStore((state) => state.setQuery);
+  const categories = useModpackStore((state) => state.categories);
+  const toggleCategory = useModpackStore((state) => state.toggleCategory);
   const results = useModpackStore((state) => state.results);
   const searchStatus = useModpackStore((state) => state.searchStatus);
   const searchError = useModpackStore((state) => state.searchError);
@@ -74,6 +76,11 @@ export function ModpacksTab() {
 
   function handleSearch() {
     void search(loader, gameVersion);
+  }
+
+  function handleToggleCategory(category: string) {
+    toggleCategory(category);
+    handleSearch();
   }
 
   return (
@@ -129,6 +136,23 @@ export function ModpacksTab() {
         </RetroButton>
       </form>
 
+      {categories.length > 0 ? (
+        <div className={styles.activeFilters}>
+          <span className={styles.activeFiltersLabel}>Filtering by</span>
+          {categories.map((category) => (
+            <button
+              key={category}
+              type="button"
+              className={styles.filterChip}
+              onClick={() => handleToggleCategory(category)}
+            >
+              {category}
+              <Icon name="close" size={10} />
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       {loader !== "fabric" ? (
         <p className={styles.notice}>
           Only Fabric modpacks can be installed so far. You can still browse{" "}
@@ -157,6 +181,8 @@ export function ModpacksTab() {
             <ModpackResultRow
               key={hit.project_id}
               hit={hit}
+              activeCategories={categories}
+              onToggleCategory={handleToggleCategory}
               installing={installingProjectId === hit.project_id}
               disabled={busy || loader !== "fabric"}
               onInstall={() => void install(hit.project_id, loader, gameVersion)}
@@ -170,11 +196,15 @@ export function ModpacksTab() {
 
 function ModpackResultRow({
   hit,
+  activeCategories,
+  onToggleCategory,
   installing,
   disabled,
   onInstall,
 }: {
   hit: SearchHit;
+  activeCategories: string[];
+  onToggleCategory: (category: string) => void;
   installing: boolean;
   disabled: boolean;
   onInstall: () => void;
@@ -192,6 +222,23 @@ function ModpackResultRow({
         <p className={styles.cardTitle}>{hit.title}</p>
         <p className={styles.description}>{hit.description}</p>
         <p className={styles.stats}>&#8595; {formatDownloads(hit.downloads)} downloads</p>
+        {hit.categories.length > 0 ? (
+          <div className={styles.tagRow}>
+            {hit.categories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                className={[styles.tag, activeCategories.includes(category) ? styles.tagActive : ""]
+                  .filter(Boolean)
+                  .join(" ")}
+                title={`Filter by "${category}"`}
+                onClick={() => onToggleCategory(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
       <RetroButton variant="primary" disabled={disabled} onClick={onInstall}>
         {installing ? "Installing…" : "Install"}

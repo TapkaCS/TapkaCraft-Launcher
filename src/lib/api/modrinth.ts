@@ -17,8 +17,15 @@ export function searchContent(
   contentKind: ContentKind,
   loader: string,
   gameVersion: string,
+  categories: string[],
 ): Promise<SearchResponse> {
-  return invoke<SearchResponse>("search_content", { query, contentKind, loader, gameVersion });
+  return invoke<SearchResponse>("search_content", {
+    query,
+    contentKind,
+    loader,
+    gameVersion,
+    categories,
+  });
 }
 
 export function listContentVersions(

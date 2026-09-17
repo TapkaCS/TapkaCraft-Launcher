@@ -70,7 +70,9 @@ pub struct InstallContentOutcome {
 
 /// Content of `content_kind` compatible with `game_version` (and `loader`,
 /// for mods - see `ContentKind::uses_loader_facet`) matching `query`
-/// (which may be empty for Modrinth's default-sorted browse listing).
+/// (which may be empty for Modrinth's default-sorted browse listing) and
+/// every tag in `categories`, if any - always tags the frontend got from a
+/// real hit's own `categories` field, never a hardcoded guess.
 #[tauri::command]
 pub async fn search_content(
     http_client: State<'_, reqwest::Client>,
@@ -78,6 +80,7 @@ pub async fn search_content(
     content_kind: ContentKind,
     loader: String,
     game_version: String,
+    categories: Vec<String>,
 ) -> Result<SearchResponse, ModrinthCommandError> {
     let loader_facet = content_kind.uses_loader_facet().then(|| loader.as_str());
     api::search(
@@ -87,6 +90,7 @@ pub async fn search_content(
         &query,
         loader_facet,
         &game_version,
+        &categories,
         20,
     )
     .await

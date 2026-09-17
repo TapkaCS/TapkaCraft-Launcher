@@ -86,6 +86,30 @@
   border-color: var(--tc-green-highlight);
 }
 
+.activeFilters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.activeFiltersLabel {
+  font-size: 0.8em;
+  color: var(--tc-text-muted);
+}
+
+.filterChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--tc-card-selected-bg);
+  border: 1px solid var(--tc-card-selected-border);
+  border-radius: 999px;
+  color: var(--tc-green-highlight);
+  font-size: 0.78em;
+}
+
 .notice {
   margin: 0;
   padding: 8px 10px;
@@ -168,4 +192,31 @@
   margin: 4px 0 0;
   font-size: 0.78em;
   color: var(--tc-text-muted);
+}
+
+.tagRow {
+  margin: 6px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tag {
+  padding: 2px 8px;
+  background: var(--tc-panel-bg);
+  border: 1px solid var(--tc-panel-border-light);
+  border-radius: 999px;
+  color: var(--tc-text-muted);
+  font-size: 0.72em;
+}
+
+.tag:hover {
+  color: var(--tc-text-primary);
+  border-color: var(--tc-card-hover-border);
+}
+
+.tagActive {
+  background: var(--tc-card-selected-bg);
+  border-color: var(--tc-card-selected-border);
+  color: var(--tc-green-highlight);
 }
